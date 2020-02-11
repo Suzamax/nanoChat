@@ -20,9 +20,10 @@ public class DirectoryThread extends Thread {
 
 	public DirectoryThread(String name, int directoryPort, double corruptionProbability) throws SocketException {
 		super(name);
-		//TODO Anotar la dirección en la que escucha el servidor de Directorio
-
- 		//TODO Crear un socket de servidor
+		// DONE Anotar la dirección en la que escucha el servidor de Directorio
+		InetSocketAddress serverAddress = new InetSocketAddress(directoryPort);
+ 		// DONE Crear un socket de servidor
+		this.socket = new DatagramSocket(directoryPort);
 
 		messageDiscardProbability = corruptionProbability;
 		//Inicialización del mapa
@@ -35,9 +36,15 @@ public class DirectoryThread extends Thread {
 		System.out.println("Directory starting...");
 		boolean running = true;
 		while (running) {
-
-				//TODO 1) Recibir la solicitud por el socket
-				//TODO 2) Extraer quién es el cliente (su dirección)
+			// DONE 1) Recibir la solicitud por el socket
+			DatagramPacket dp = new DatagramPacket(buf, buf.length);
+			try {
+				socket.receive(dp);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			// TODO 2) Extraer quién es el cliente (su dirección)
+			InetSocketAddress origen = (InetSocketAddress) dp.getSocketAddress();
 				// 3) Vemos si el mensaje debe ser descartado por la probabilidad de descarte
 
 				double rand = Math.random();
@@ -47,7 +54,9 @@ public class DirectoryThread extends Thread {
 				}
 				
 				//TODO (Solo Boletín 2) Devolver una respuesta idéntica en contenido a la solicitud
-				
+
+			socket.send(dp); // Piruleta.
+
 				//TODO 4) Analizar y procesar la solicitud (llamada a processRequestFromCLient)
 				//TODO 5) Tratar las excepciones que puedan producirse
 		}
