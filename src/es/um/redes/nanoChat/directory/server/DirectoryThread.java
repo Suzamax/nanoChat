@@ -40,11 +40,9 @@ public class DirectoryThread extends Thread {
 			DatagramPacket dp = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(dp);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			// TODO 2) Extraer quién es el cliente (su dirección)
-			InetSocketAddress origen = (InetSocketAddress) dp.getSocketAddress();
+
+				// TODO 2) Extraer quién es el cliente (su dirección)
+				InetSocketAddress origen = (InetSocketAddress) dp.getSocketAddress();
 				// 3) Vemos si el mensaje debe ser descartado por la probabilidad de descarte
 
 				double rand = Math.random();
@@ -55,9 +53,12 @@ public class DirectoryThread extends Thread {
 				
 				//TODO (Solo Boletín 2) Devolver una respuesta idéntica en contenido a la solicitud
 
-			socket.send(dp); // Piruleta.
+				socket.send(dp); // Piruleta.
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
-				//TODO 4) Analizar y procesar la solicitud (llamada a processRequestFromCLient)
+			//TODO 4) Analizar y procesar la solicitud (llamada a processRequestFromCLient)
 				//TODO 5) Tratar las excepciones que puedan producirse
 		}
 		socket.close();

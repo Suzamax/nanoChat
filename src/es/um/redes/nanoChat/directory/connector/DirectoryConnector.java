@@ -26,9 +26,9 @@ public class DirectoryConnector {
 
 	public DirectoryConnector(String agentAddress) throws IOException {
 		//TODO A partir de la dirección y del puerto generar la dirección de conexión para el Socket
-		this.directoryAddress = new InetSocketAddress(DEFAULT_PORT); // IS DIS NICE???
+		this.directoryAddress = new InetSocketAddress(InetAddress.getByName(agentAddress), DEFAULT_PORT);
 		//TODO Crear el socket UDP
-		this.socket = new DatagramSocket(this.directoryAddress); // IS DIS NICE???
+		this.socket = new DatagramSocket(); // No hace falta engancharle el SocketAddr
 	}
 
 	/**
