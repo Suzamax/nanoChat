@@ -31,6 +31,17 @@ public class DirectoryConnector {
 		this.socket = new DatagramSocket(); // No hace falta engancharle el SocketAddr
 	}
 
+	// TODO Borrar esto cuando se pueda
+	public void mandaCadena(String str) throws IOException {
+		//byte[] buf = new byte[PACKET_MAX_SIZE];
+		// Ejemplo chenchillo
+		byte[] buf = str.getBytes(); // Un poco mierda...
+		DatagramPacket pkt = new DatagramPacket(buf, buf.length, directoryAddress);
+
+
+	}
+
+
 	/**
 	 * Envía una solicitud para obtener el servidor de chat asociado a un determinado protocolo
 	 * 
