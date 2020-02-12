@@ -41,7 +41,7 @@ public class DirectoryThread extends Thread {
 			try {
 				socket.receive(dp);
 
-				// TODO 2) Extraer quién es el cliente (su dirección)
+				// DONE 2) Extraer quién es el cliente (su dirección)
 				InetSocketAddress origen = (InetSocketAddress) dp.getSocketAddress();
 				// 3) Vemos si el mensaje debe ser descartado por la probabilidad de descarte
 

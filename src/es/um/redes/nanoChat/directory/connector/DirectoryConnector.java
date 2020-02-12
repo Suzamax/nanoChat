@@ -33,12 +33,26 @@ public class DirectoryConnector {
 
 	// TODO Borrar esto cuando se pueda
 	public void mandaCadena(String str) throws IOException {
-		//byte[] buf = new byte[PACKET_MAX_SIZE];
 		// Ejemplo chenchillo
-		byte[] buf = str.getBytes(); // Un poco mierda...
+		byte[] buf = str.getBytes();
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, directoryAddress);
+		byte[] buf2 = new byte[PACKET_MAX_SIZE];
+		DatagramPacket pkt2 = new DatagramPacket(buf2, buf2.length);
+		boolean running = true;
+		while (running) {
+			try {
+				socket.send(pkt);
+				socket.setSoTimeout(1000);
+				socket.receive(pkt2);
+				running = false;
+			} catch (SocketTimeoutException e) {
+				System.out.println("Timed out...");
+			}
+		}
 
-
+		String cadena = new String(pkt2.getData(), 0, pkt2.getLength());
+		System.out.println("Enviado: " + str + "\nRecibido: " + cadena);
+		socket.close();
 	}
 
 
