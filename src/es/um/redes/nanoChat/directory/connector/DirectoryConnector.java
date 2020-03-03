@@ -112,18 +112,21 @@ public class DirectoryConnector {
 		//DONE Analizar si la respuesta no contiene dirección (devolver null)
 		ByteBuffer bb = ByteBuffer.wrap(packet.getData());
 		byte opcode = bb.get(); // 1er byte
+
+		if (opcode == OPCODE_SERVERRES) {
+			byte[] ip_raw = new byte[4];
+			bb.get(ip_raw);
+			int puerto = bb.getInt();
+			InetAddress ip = InetAddress.getByAddress(ip_raw);
+			return new InetSocketAddress(ip, puerto);
+		}
 		if (opcode == OPCODE_NOSERVER) return null;
 		//DONE Si la respuesta no está vacía, devolver la dirección (extraerla del mensaje)
 		if (opcode != OPCODE_SERVERRES) {
 			System.err.println("¡Recibido OpCode inesperado!" + opcode);
 			return null;
 		}
-		// Conseguir socket con IP y puerto:
-		byte[] ip_raw = new byte[4];
-		bb.get(ip_raw);
-		int puerto = bb.getInt();
-		InetAddress ip = InetAddress.getByAddress(ip_raw);
-		return new InetSocketAddress(ip, puerto);
+		return null;
 	}
 	
 	/**
@@ -132,10 +135,26 @@ public class DirectoryConnector {
 	 */
 	public boolean registerServerForProtocol(int protocol, int port) throws IOException {
 
-		//TODO Construir solicitud de registro (buildRegistration)
-		//TODO Enviar solicitud
-		//TODO Recibe respuesta
-		//TODO Procesamos la respuesta para ver si se ha podido registrar correctamente
+		//DONE Construir solicitud de registro (buildRegistration)
+		byte[] booooooof = buildRegistration(protocol, port);
+		byte[] gettoboof = new byte[PACKET_MAX_SIZE];
+		DatagramPacket pktres = new DatagramPacket(gettoboof, gettoboof.length);
+		int reintentos = 5;
+		DatagramPacket pkt = new DatagramPacket(booooooof, booooooof.length, directoryAddress);
+		//DONE Enviar solicitud
+		//DONE Recibe respuesta
+		while (reintentos > 0) {
+			socket.send(pkt);
+			socket.setSoTimeout(TIMEOUT);
+			try {
+				socket.receive(pktres);
+				ByteBuffer contents = ByteBuffer.wrap(pktres.getData());
+				return contents.get() == 1;
+			} catch (SocketTimeoutException e) {
+				--reintentos;
+			}
+		}
+		//DONE????? Procesamos la respuesta para ver si se ha podido registrar correctamente
 		return false;
 	}
 
@@ -143,8 +162,12 @@ public class DirectoryConnector {
 	//Método para construir una solicitud de registro de servidor
 	//OJO: No hace falta proporcionar la dirección porque se toma la misma desde la que se envió el mensaje
 	private byte[] buildRegistration(int protocol, int port) {
-		//TODO Devolvemos el mensaje codificado en binario según el formato acordado
-		return null;
+		//DONE????? Devolvemos el mensaje codificado en binario según el formato acordado
+		ByteBuffer bb = ByteBuffer.allocate(9);
+		bb.put(OPCODE_REGISTER); // 1
+		bb.putInt(protocol); // 4
+		bb.putInt(port); // 4
+		return bb.array();
 	}
 
 	public void close() {
