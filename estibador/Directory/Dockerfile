@@ -1,5 +1,5 @@
 FROM openjdk:8-alpine
-COPY src /usr/src/directorynano
+COPY ../../src /usr/src/directorynano
 WORKDIR /usr/src/directorynano
 RUN javac -cp "./*" \
 es/um/redes/nanoChat/directory/server/Directory.java \
