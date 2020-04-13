@@ -1,7 +1,7 @@
 ---
 title: "Mensajes y autómatas"
 author: [Carlos Cañellas Tovar, Sergio Raúl Rech Lizón]
-date: "2017-02-20"
+date: "20 de abril de 2020"
 subject: "Redes de Comunicaciones"
 keywords: [Markdown, Example]
 subtitle: "Formato de los mensajes y su funcionamiento y autómatas de cada aplicación"

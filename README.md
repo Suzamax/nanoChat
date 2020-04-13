@@ -13,7 +13,7 @@ Se editan los Markdown.
 Para compilar se ejecuta:
 
 ```bash
-pandoc doc/<nombre_documento>.md -o <nombre_que_quieras_dar>.pdf --from markdown --template eisvogel --listings
+pandoc <nombre_documento>.md -o <nombre_que_quieras_dar>.pdf --from markdown --template eisvogel --listings
 ```
 
 Hay que instalar LaTeX, Pandoc y [esta plantilla](https://github.com/Wandmalfarbe/pandoc-latex-template).
