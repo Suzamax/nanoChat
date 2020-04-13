@@ -4,10 +4,18 @@ Creado por Carlos y Sergio
 
 ## Cómo usar
 
-Lo he hecho para tontos, si tienes Docker instalado es una chorrada:
+Si usas IntelliJ IDEA o Eclipse es trivial.
+
+## Docmuentación
+
+Se editan los Markdown.
+
+Para compilar se ejecuta:
+
 ```bash
-docker build --no-cache -f Dockerfile -t nanochat .
-docker run -it --rm --name nanoChatRun nanochat
+pandoc doc/<nombre_documento>.md -o <nombre_que_quieras_dar>.pdf --from markdown --template eisvogel --listings
 ```
 
-Si no, se ejecuta con el IDE y marchando.
+Hay que instalar LaTeX, Pandoc y [esta plantilla](https://github.com/Wandmalfarbe/pandoc-latex-template).
+
+Para Windows con MikTeX valdría, Pandoc se instala fácil con un instalador, y la plantilla tiene su propia guía.
