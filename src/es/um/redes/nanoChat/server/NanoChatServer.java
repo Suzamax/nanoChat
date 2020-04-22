@@ -94,7 +94,7 @@ public class NanoChatServer implements Runnable {
 		}
 
         
-        //Si todo ha ido bien entonces iniciamos el servidor en segundo plano
+        //Si_todo ha ido bien entonces iniciamos el servidor en segundo plano
     	new Thread(this).start();
     	
     	System.out.println("Server running on port " +

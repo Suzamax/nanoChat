@@ -70,9 +70,9 @@ public class NCServerThread extends Thread {
 
 	//Obtenemos el nick y solicitamos al ServerManager que verifique si está duplicado
 	private void receiveAndVerifyNickname() throws IOException {
-		while (1 < 2) {
+		while (!socket.isClosed()) {
 			String nick = this.dis.readUTF();
-			dos.writeUTF(serverManager.addUser(nick) ? "NICK_OK" : "DUPLICATED");
+			this.dos.writeUTF(serverManager.addUser(nick) ? "NICK_OK" : "NICK_DUPLICATED");
 		}
 		//La lógica de nuestro programa nos obliga a que haya un nick registrado antes de proseguir
 		//DONE Entramos en un bucle hasta comprobar que alguno de los nicks proporcionados no está duplicado
