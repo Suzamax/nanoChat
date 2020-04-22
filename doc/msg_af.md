@@ -22,17 +22,20 @@ output: pdf_document
 
 ## Mensajes Campo-valor
 
-## Mensajes ML (lenguaje de marcas)
-
 
 
 
 # Autómatas
 
-## Autómata cliente-directorio
+## Autómata del cliente con el directorio
 
-![Autómata](./cliente_dir.png)
+![Autómata de cliente a directorio](./cliente_dir.png)
 
-## Autómata servidor-directorio
+## Autómata del servidor con el directorio
 
-## Autómata cliente-servidor
+## Autómata del servidor para recibir peticiones del cliente y procesarlas
+
+![Autómata de servidor a cliente](./servidor.png)
+
+## Autómata del cliente para enviar peticiones al servidor y recibir respuestas
+
