@@ -13,7 +13,6 @@ public class NCController {
 	private static final byte PRE_CONNECTION = 1;
 	private static final byte PRE_REGISTRATION = 2;
 	//Código de protocolo implementado por este cliente
-	//DONE Cambiar para cada grupo
 	private static final int PROTOCOL = 78375777;
 	//Conector para enviar y recibir mensajes del directorio
 	private DirectoryConnector directoryConnector;
@@ -100,8 +99,8 @@ public class NCController {
 			boolean registered = ncConnector.registerNickname_UnformattedMessage(nickname);
 			//TODO: Cambiar la llamada anterior a registerNickname() al usar mensajes formateados 
 			if (registered) {
-				//TODO Si el registro fue exitoso pasamos al siguiente estado del autómata
-				System.out.println("* Your nickname is now "+nickname);
+				// DONE Si el registro fue exitoso pasamos al siguiente estado del autómata
+				System.out.println("* Your nickname is now " + nickname);
 			}
 			else
 				//En este caso el nick ya existía
@@ -215,7 +214,7 @@ public class NCController {
 			System.out.println("* Check your connection, the directory is not available.");		
 			return false;
 		}
-		else return true;
+		return true;
 	}
 	
 	//Método para establecer la conexión con el servidor de Chat (a través del NCConnector)
@@ -233,7 +232,7 @@ public class NCController {
 				clientStatus = PRE_REGISTRATION;
 				return true;
 			}
-			else return false;
+			return false;
 	}
 
 	//Método que comprueba si el usuario ha introducido el comando para salir de la aplicación

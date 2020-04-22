@@ -33,13 +33,13 @@ public class DirectoryConnector {
 	private InetSocketAddress directoryAddress; // dirección del servidor de directorio
 
 	public DirectoryConnector(String agentAddress) throws IOException {
-		//TODO A partir de la dirección y del puerto generar la dirección de conexión para el Socket
+		// DONE A partir de la dirección y del puerto generar la dirección de conexión para el Socket
 		this.directoryAddress = new InetSocketAddress(InetAddress.getByName(agentAddress), DEFAULT_PORT);
-		//TODO Crear el socket UDP
+		// DONE Crear el socket UDP
 		this.socket = new DatagramSocket(); // No hace falta engancharle el SocketAddr
 	}
 
-	// TODO Borrar esto cuando se pueda
+	/*DONE Borrar esto cuando se pueda
 	public void mandaCadena(String str) throws IOException {
 		// Ejemplo chenchillo
 		byte[] buf = str.getBytes();
@@ -62,7 +62,7 @@ public class DirectoryConnector {
 		System.out.println("Enviado: " + str + "\nRecibido: " + cadena);
 		socket.close();
 	}
-
+	*/
 
 	/**
 	 * Envía una solicitud para obtener el servidor de chat asociado a un determinado protocolo
@@ -119,13 +119,8 @@ public class DirectoryConnector {
 			int puerto = bb.getInt();
 			InetAddress ip = InetAddress.getByAddress(ip_raw);
 			return new InetSocketAddress(ip, puerto);
-		}
-		if (opcode == OPCODE_NOSERVER) return null;
+		} else if (opcode != OPCODE_NOSERVER) System.err.println("¡Recibido OpCode inesperado!" + opcode);
 		//DONE Si la respuesta no está vacía, devolver la dirección (extraerla del mensaje)
-		if (opcode != OPCODE_SERVERRES) {
-			System.err.println("¡Recibido OpCode inesperado!" + opcode);
-			return null;
-		}
 		return null;
 	}
 	

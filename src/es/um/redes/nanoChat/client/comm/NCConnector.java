@@ -47,9 +47,11 @@ public class NCConnector {
 		//Obtenemos el mensaje de texto listo para enviar
 		String rawMessage = message.toEncodedString();
 		//Escribimos el mensaje en el flujo de salida, es decir, provocamos que se envíe por la conexión TCP
-		dos.writeUTF(rawMessage);
+		this.dos.writeUTF(rawMessage);
 		//TODO Leemos el mensaje recibido como respuesta por el flujo de entrada
+		String res = this.dis.readUTF();
 		//TODO Analizamos el mensaje para saber si está duplicado el nick (modificar el return en consecuencia)
+
 		return true;
 	}
 	
@@ -57,6 +59,7 @@ public class NCConnector {
 	public List<NCRoomDescription> getRooms() throws IOException {
 		//Funcionamiento resumido: SND(GET_ROOMS) and RCV(ROOM_LIST)
 		//TODO completar el método
+
 		return null;
 	}
 	
