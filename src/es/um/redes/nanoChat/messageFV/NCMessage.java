@@ -9,9 +9,15 @@ import java.util.TreeMap;
 public abstract class NCMessage {
 	protected byte opcode;
 
-	//TODO Implementar el resto de los opcodes para los distintos mensajes
+	//DONE? Implementar el resto de los opcodes para los distintos mensajes
 	public static final byte OP_INVALID_CODE = 0;
 	public static final byte OP_NICK = 1;
+	public static final byte OP_ROOMLIST = 2;
+	public static final byte OP_ENTER = 3;
+	public static final byte OP_IN_ROOM = 4;
+	public static final byte OP_SEND = 5;
+	public static final byte OP_EXIT = 6;
+	public static final byte OP_INFO = 7;
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -25,18 +31,24 @@ public abstract class NCMessage {
 	 * que aparece en los mensajes
 	 */
 	private static final Byte[] _valid_opcodes = {
-		OP_NICK
-		};
+		OP_NICK, // DONE
+		OP_ROOMLIST, // DONE
+		OP_ENTER, // DONE
+		OP_IN_ROOM, // DONE?
+		OP_SEND, // DONE
+		OP_EXIT,
+		OP_INFO
+	};
 
 	/**
 	 * cadena exacta de cada orden
 	 */
 	private static final String[] _valid_operations_str = {
-		"Nick"
-		};
+		"Nick",	"Room List", "Enter", "In room", "Send", "Exit", "Info"
+	};
 
-	private static Map<String, Byte> _operation_to_opcode;
-	private static Map<Byte, String> _opcode_to_operation;
+	private static final Map<String, Byte> _operation_to_opcode;
+	private static final Map<Byte, String> _opcode_to_operation;
 	
 	static {
 		_operation_to_opcode = new TreeMap<>();
@@ -76,28 +88,61 @@ public abstract class NCMessage {
 		String[] lines = message.split(String.valueOf(END_LINE));
 		if (!lines[0].isEmpty()) { // Si la línea no está vacía
 			int idx = lines[0].indexOf(DELIMITER); // Posición del delimitador
-			String field = lines[0].substring(0, idx).toLowerCase(); 																		// minúsculas
+			String field = lines[0].substring(0, idx).toLowerCase(); // minúsculas
 			String value = lines[0].substring(idx + 1).trim();
 			if (!field.equalsIgnoreCase(OPCODE_FIELD))
 				return null;
 			byte code = operationToOpcode(value);
-			if (code == OP_INVALID_CODE)
-				return null;
 			switch (code) {
-			case OP_NICK:
-			{
-				return NCRoomMessage.readFromString(code, message);
-			}
-			default:
-				System.err.println("Unknown message type received:" + code);
-				return null;
+				case OP_NICK:
+					return NCNickMessage.readFromString(code, message);
+				case OP_ROOMLIST:
+					// TODO return NCRoomListMessage.readFromString(code, message);
+				case OP_ENTER:
+					return NCRoomMessage.readFromString(code, message);
+				case OP_SEND:
+					// TODO NCSendMessage
+				case OP_EXIT:
+					// TODO NCExitMessage
+				case OP_INFO:
+					// TODO NCInfoMessage
+				case OP_INVALID_CODE:
+				default:
+					System.err.println("Unknown or invalid message type received:" + code);
+					return null;
 			}
 		} else
 			return null;
 	}
 
-	//Método para construir un mensaje de tipo Room a partir del opcode y del nombre
+	/* TODO
+	//Método para construir un mensaje de tipo RoomList a partir del opcode y del nombre
+	public static NCMessage makeRoomListMessage(byte code) {
+		return new NCRoomListMessage(code);
+	}
+
+	//Método para unirse a una sala
 	public static NCMessage makeRoomMessage(byte code, String name) {
 		return new NCRoomMessage(code, name);
 	}
+
+	// Método para construir un mensaje de tipo Nick a partir del opcode y el nick dado
+	public static NCMessage makeNickMessage(byte code, String nick) {
+		return new NCNickMessage(code, nick);
+	}
+
+	// Método para construir un mensaje de tipo Nick a partir del opcode y el nick dado
+	public static NCMessage makeEnterMessage(byte code, String nick) {
+		return new NCNickMessage(code, nick);
+	}
+
+	// Método para construir un mensaje de tipo Nick a partir del opcode y el nick dado
+	public static NCMessage makeSendMessage(byte code, String nick) {
+		return new NCNickMessage(code, nick);
+	}
+
+	// Método para construir un mensaje de tipo Nick a partir del opcode y el nick dado
+	public static NCMessage makeExitMessage(byte code, String nick) {
+		return new NCNickMessage(code, nick);
+	} */
 }

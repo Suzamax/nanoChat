@@ -8,8 +8,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import es.um.redes.nanoChat.messageML.NCMessage;
-import es.um.redes.nanoChat.messageML.NCRoomMessage;
+import es.um.redes.nanoChat.messageFV.NCMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomMessage;
 import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
 //Esta clase proporciona la funcionalidad necesaria para intercambiar mensajes entre el cliente y el servidor de NanoChat
@@ -65,9 +65,12 @@ public class NCConnector {
 	
 	//Método para solicitar la entrada en una sala
 	public boolean enterRoom(String room) throws IOException {
-		//Funcionamiento resumido: SND(ENTER_ROOM<room>) and RCV(IN_ROOM) or RCV(REJECT)
-		//TODO completar el método
-		return true;
+		// Resumen: SND(ENTER_ROOM <room>) && RCV(IN_ROOM) || RCV(REJECT)
+		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_ENTER, room);
+		String strmsg = msg.toEncodedString();
+		dos.writeUTF(strmsg);
+		NCRoomMessage res = (NCRoomMessage) NCMessage.readMessageFromSocket(dis);
+		return (res != null ? res.getOpcode() : 0) == NCMessage.OP_IN_ROOM;
 	}
 	
 	//Método para salir de una sala
@@ -92,6 +95,8 @@ public class NCConnector {
 		//TODO Devolvemos la descripción contenida en el mensaje
 		return null;
 	}
+
+
 	
 	//Método para cerrar la comunicación con la sala
 	//TODO (Opcional) Enviar un mensaje de salida del servidor de Chat
