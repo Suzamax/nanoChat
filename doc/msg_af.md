@@ -20,10 +20,65 @@ output: pdf_document
 
 ## Mensajes binarios al directorio
 
+
+
 ## Mensajes Campo-valor
 
+- NCNickMessage
 
+```
+operation:1\n
+nick:<nick>\n // Siendo <nick> el nick elegido.
+\n
+```
 
+- NCRoomMessage
+
+```
+operation:2\n
+\n
+```
+
+- NCEnterMessage
+```
+operation:3\n
+room:<room>\n // Siendo <room> la habitación.
+\n
+```
+Se responde con la siguiente operación si se entra con éxito:
+
+- NCInRoomMessage
+```
+operation:4\n
+\n
+```
+- NCSendMessage
+```
+operation:5\n
+message:<message>\n // Los saltos de línea in-message son %n
+\n
+```
+
+- NCExitMessage
+```
+operation:6\n
+\n
+```
+
+- NCInfoMessage
+```
+	operation:7\n
+	\n
+```
+Se responde con lo siguiente:
+
+- NCInfoReplyMessage
+```
+	operation:8\n
+	topic:<topic>\n
+	users:<lista de usuarios>\n
+	\n
+```
 
 # Autómatas
 
