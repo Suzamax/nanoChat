@@ -1,6 +1,6 @@
 ---
 title: "Mensajes y autómatas"
-author: [Carlos Cañellas Tovar, Sergio Raúl Rech Lizón]
+author: [Carlos Cañellas Tovar, Sergio Raúl Rech Lizon]
 date: "20 de abril de 2020"
 subject: "Redes de Comunicaciones"
 keywords: [Markdown, Example]
