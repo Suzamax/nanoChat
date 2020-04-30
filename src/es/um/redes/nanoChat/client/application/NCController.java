@@ -99,7 +99,7 @@ public class NCController {
 			boolean registered = ncConnector.registerNickname_UnformattedMessage(nickname);
 			//TODO: Cambiar la llamada anterior a registerNickname() al usar mensajes formateados 
 			if (registered) {
-				// DONE Si el registro fue exitoso pasamos al siguiente estado del autómata
+				// // Si el registro fue exitoso pasamos al siguiente estado del autómata
 				System.out.println("* Your nickname is now " + nickname);
 			}
 			else

@@ -28,9 +28,9 @@ public class DirectoryThread extends Thread {
 
 	public DirectoryThread(String name, int directoryPort, double corruptionProbability) throws SocketException {
 		super(name);
-		// DONE Anotar la dirección en la que escucha el servidor de Directorio
+		// // Anotar la dirección en la que escucha el servidor de Directorio
 		InetSocketAddress serverAddress = new InetSocketAddress(directoryPort);
- 		// DONE Crear un socket de servidor
+ 		// // Crear un socket de servidor
 		this.socket = new DatagramSocket(directoryPort);
 
 		messageDiscardProbability = corruptionProbability;
@@ -44,12 +44,12 @@ public class DirectoryThread extends Thread {
 		System.out.println("Directory starting...");
 		boolean running = true;
 		while (running) {
-			// DONE 1) Recibir la solicitud por el socket
+			// // 1) Recibir la solicitud por el socket
 			DatagramPacket dp = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(dp);
 
-				// DONE 2) Extraer quién es el cliente (su dirección)
+				// // 2) Extraer quién es el cliente (su dirección)
 				InetSocketAddress cliente = (InetSocketAddress) dp.getSocketAddress();
 				// 3) Vemos si el mensaje debe ser descartado por la probabilidad de descarte
 
@@ -59,11 +59,11 @@ public class DirectoryThread extends Thread {
 					continue;
 				}
 
-				//DONE LOL (Solo Boletín 2) Devolver una respuesta idéntica en contenido a la solicitud
+				//// (Solo Boletín 2) Devolver una respuesta idéntica en contenido a la solicitud
 				// socket.send(dp); // Piruleta.
-				//DONE 4) Analizar y procesar la solicitud (llamada a processRequestFromCLient)
+				//// 4) Analizar y procesar la solicitud (llamada a processRequestFromCLient)
 				processRequestFromClient(dp.getData(), cliente);
-				//DONE 5) Tratar las excepciones que puedan producirse
+				//// 5) Tratar las excepciones que puedan producirse
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -74,7 +74,7 @@ public class DirectoryThread extends Thread {
 
 	//Método para procesar la solicitud enviada por clientAddr
 	public void processRequestFromClient(byte[] data, InetSocketAddress clientAddr) throws IOException {
-		//DONE 1) Extraemos el tipo de mensaje recibido
+		//// 1) Extraemos el tipo de mensaje recibido
 		ByteBuffer bb = ByteBuffer.wrap(data);
 		byte opcode = bb.get();
 		switch (opcode) {
@@ -91,44 +91,44 @@ public class DirectoryThread extends Thread {
 				else sendEmpty(clientAddr);
 				break;
 		}
-		//DONE! 2) Procesar el caso de que sea un registro y enviar mediante sendOK
-		//DONE????? 3) Procesar el caso de que sea una consulta
-		//DONE 3.1) Devolver una dirección si existe un servidor (sendServerInfo)
-		//DONE 3.2) Devolver una notificación si no existe un servidor (sendEmpty)
+		////! 2) Procesar el caso de que sea un registro y enviar mediante sendOK
+		////????? 3) Procesar el caso de que sea una consulta
+		//// 3.1) Devolver una dirección si existe un servidor (sendServerInfo)
+		//// 3.2) Devolver una notificación si no existe un servidor (sendEmpty)
 	}
 
 	//Método para enviar una respuesta vacía (no hay servidor)
 	private void sendEmpty(InetSocketAddress clientAddr) throws IOException {
-		//DONE Construir respuesta
+		//// Construir respuesta
 		byte[] buf = new byte[1];
 		buf[0] = OPCODE_NOSERVER;
-		//DONE Enviar respuesta
+		//// Enviar respuesta
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, clientAddr);
 		socket.send(pkt);
 	}
 
 	//Método para enviar la dirección del servidor al cliente
 	private void sendServerInfo(InetSocketAddress serverAddress, InetSocketAddress clientAddr) throws IOException {
-		//DONE Obtener la representación binaria de la dirección
+		//// Obtener la representación binaria de la dirección
 		byte[] ip_raw = serverAddress.getAddress().getAddress();
 		int puerto = serverAddress.getPort();
-		//DONE Construir respuesta
+		//// Construir respuesta
 		ByteBuffer bb = ByteBuffer.allocate(9);
 		// OP + IP + PORT = 1 + 4 + 4 = 9
 		bb.put(OPCODE_SERVERRES);
 		bb.put(ip_raw);
 		bb.putInt(puerto);
-		//DONE Enviar respuesta
+		//// Enviar respuesta
 		DatagramPacket pkt = new DatagramPacket(bb.array(), bb.array().length, clientAddr);
 		socket.send(pkt);
 	}
 
 	//Método para enviar la confirmación del registro
 	private void sendOK(InetSocketAddress clientAddr) throws IOException {
-		//DONE Construir respuesta
+		//// Construir respuesta
 		byte[] buf = new byte[1];
 		buf[0] = OPCODE_OK;
-		//DONE Enviar respuesta
+		//// Enviar respuesta
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, clientAddr);
 		socket.send(pkt);
 	}

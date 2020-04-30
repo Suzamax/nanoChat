@@ -20,7 +20,45 @@ output: pdf_document
 
 ## Mensajes binarios al directorio
 
+Se usan OPCODEs que corresponden a un número entero.
 
+- `OK`: Confirmación del registro de un servidor.
+
+    Código: 1
+    
+    Formato: un byte que contiene el número de código.
+
+- `NOSERVER`: Se envía en la respuesta vacía, en ausencia de servidor.
+
+    Código: 2
+    
+    Formato: un byte que contiene el número de código.
+
+- `REGISTER`: Lo usarán los servidores de chat. Sirve para registrar tal servidor en el directorio.
+
+    Código: 3
+    
+    Formato: un byte que contiene el número de código + el tamaño de un entero para el protocolo + el tamaño de un entero para el puerto.
+    
+    En total 9 bytes.
+    
+    Se asume que el tamaño de un número entero en Java estándar son 4 bytes (32 bits).
+
+- `GETSERVER`: Lo usarán los clientes para obtener el servidor que corresponde con su protocolo.
+
+    Código: 4
+    
+    Formato: un byte que contiene el número de código + el tamaño de un entero para almacenar el protocolo.
+    
+    En total 5 bytes.
+
+- `SERVERRES`: Respuesta a un `GETSERVER`. Contiene los datos del servidor.
+
+    Código: 5
+    
+    Formato: un byte que contiene el número de código + un array de 4 bytes con la IP del servidor + el tamaño de un entero para el puerto.
+
+    En total 9 bytes.
 
 ## Mensajes Campo-valor
 
@@ -82,11 +120,16 @@ Se responde con lo siguiente:
 
 # Autómatas
 
+La interacción cliente-servidor se ha dividido en dos autómatas para mayor claridad.
+
 ## Autómata del cliente con el directorio
 
 ![Autómata de cliente a directorio](./cliente_dir.png)
 
 ## Autómata del servidor con el directorio
+
+![Autómata de servidor a directorio](./srv_dir.png)
+
 
 ## Autómata del servidor para recibir peticiones del cliente y procesarlas
 
@@ -94,3 +137,4 @@ Se responde con lo siguiente:
 
 ## Autómata del cliente para enviar peticiones al servidor y recibir respuestas
 
+![Autómata de cliente a servidor](./cliente.png)

@@ -33,13 +33,13 @@ public class DirectoryConnector {
 	private InetSocketAddress directoryAddress; // dirección del servidor de directorio
 
 	public DirectoryConnector(String agentAddress) throws IOException {
-		// DONE A partir de la dirección y del puerto generar la dirección de conexión para el Socket
+		// // A partir de la dirección y del puerto generar la dirección de conexión para el Socket
 		this.directoryAddress = new InetSocketAddress(InetAddress.getByName(agentAddress), DEFAULT_PORT);
-		// DONE Crear el socket UDP
+		// // Crear el socket UDP
 		this.socket = new DatagramSocket(); // No hace falta engancharle el SocketAddr
 	}
 
-	/*DONE Borrar esto cuando se pueda
+	/*// Borrar esto cuando se pueda
 	public void mandaCadena(String str) throws IOException {
 		// Ejemplo chenchillo
 		byte[] buf = str.getBytes();
@@ -70,23 +70,23 @@ public class DirectoryConnector {
 	 */
 	public InetSocketAddress getServerForProtocol(int protocol) throws IOException {
 
-		//DONE Generar el mensaje de consulta llamando a buildQuery()
+		//// Generar el mensaje de consulta llamando a buildQuery()
 		byte[] consulta = buildQuery(protocol);
-		//DONE Construir el datagrama con la consulta
+		//// Construir el datagrama con la consulta
 		DatagramPacket pkt = new DatagramPacket(consulta, consulta.length, directoryAddress);
-		//DONE Enviar datagrama por el socket
+		//// Enviar datagrama por el socket
 		int reintentos = 5;
-		//DONE preparar el buffer para la respuesta
+		//// preparar el buffer para la respuesta
 		byte[] buf = new byte[PACKET_MAX_SIZE];
-		//DONE Recibir la respuesta
+		//// Recibir la respuesta
 		DatagramPacket pktres = new DatagramPacket(buf, buf.length);
 		while (reintentos > 0) {
 			socket.send(pkt);
-			//DONE Establecer el temporizador para el caso en que no haya respuesta
+			//// Establecer el temporizador para el caso en que no haya respuesta
 			socket.setSoTimeout(TIMEOUT);
 			try {
 				socket.receive(pktres);
-				//DONE Procesamos la respuesta para devolver la dirección que hay en ella
+				//// Procesamos la respuesta para devolver la dirección que hay en ella
 				return getAddressFromResponse(pktres);
 			} catch (SocketTimeoutException e) {
 				--reintentos;
@@ -99,7 +99,7 @@ public class DirectoryConnector {
 
 	//Método para generar el mensaje de consulta (para obtener el servidor asociado a un protocolo)
 	private byte[] buildQuery(int protocol) {
-		// DONE Devolvemos el mensaje codificado en binario según el formato acordado
+		// // Devolvemos el mensaje codificado en binario según el formato acordado
 		// OP (1) + PROTOCOLO (4) = 5 bytes
 		ByteBuffer bb = ByteBuffer.allocate(5);
 		bb.put(OPCODE_GETSERVER);
@@ -109,7 +109,7 @@ public class DirectoryConnector {
 
 	//Método para obtener la dirección de internet a partir del mensaje UDP de respuesta
 	private InetSocketAddress getAddressFromResponse(DatagramPacket packet) throws UnknownHostException {
-		//DONE Analizar si la respuesta no contiene dirección (devolver null)
+		//// Analizar si la respuesta no contiene dirección (devolver null)
 		ByteBuffer bb = ByteBuffer.wrap(packet.getData());
 		byte opcode = bb.get(); // 1er byte
 
@@ -120,7 +120,7 @@ public class DirectoryConnector {
 			InetAddress ip = InetAddress.getByAddress(ip_raw);
 			return new InetSocketAddress(ip, puerto);
 		} else if (opcode != OPCODE_NOSERVER) System.err.println("¡Recibido OpCode inesperado!" + opcode);
-		//DONE Si la respuesta no está vacía, devolver la dirección (extraerla del mensaje)
+		//// Si la respuesta no está vacía, devolver la dirección (extraerla del mensaje)
 		return null;
 	}
 	
@@ -130,14 +130,14 @@ public class DirectoryConnector {
 	 */
 	public boolean registerServerForProtocol(int protocol, int port) throws IOException {
 
-		//DONE Construir solicitud de registro (buildRegistration)
+		//// Construir solicitud de registro (buildRegistration)
 		byte[] booooooof = buildRegistration(protocol, port);
 		byte[] gettoboof = new byte[PACKET_MAX_SIZE];
 		DatagramPacket pktres = new DatagramPacket(gettoboof, gettoboof.length);
 		int reintentos = 5;
 		DatagramPacket pkt = new DatagramPacket(booooooof, booooooof.length, directoryAddress);
-		//DONE Enviar solicitud
-		//DONE Recibe respuesta
+		//// Enviar solicitud
+		//// Recibe respuesta
 		while (reintentos > 0) {
 			socket.send(pkt);
 			socket.setSoTimeout(TIMEOUT);
@@ -149,7 +149,7 @@ public class DirectoryConnector {
 				--reintentos;
 			}
 		}
-		//DONE????? Procesamos la respuesta para ver si se ha podido registrar correctamente
+		////????? Procesamos la respuesta para ver si se ha podido registrar correctamente
 		return false;
 	}
 
@@ -157,7 +157,7 @@ public class DirectoryConnector {
 	//Método para construir una solicitud de registro de servidor
 	//OJO: No hace falta proporcionar la dirección porque se toma la misma desde la que se envió el mensaje
 	private byte[] buildRegistration(int protocol, int port) {
-		//DONE????? Devolvemos el mensaje codificado en binario según el formato acordado
+		////????? Devolvemos el mensaje codificado en binario según el formato acordado
 		ByteBuffer bb = ByteBuffer.allocate(9);
 		bb.put(OPCODE_REGISTER); // 1
 		bb.putInt(protocol); // 4

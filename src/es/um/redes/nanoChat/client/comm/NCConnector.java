@@ -19,9 +19,9 @@ public class NCConnector {
 	protected DataInputStream dis;
 	
 	public NCConnector(InetSocketAddress serverAddress) throws UnknownHostException, IOException {
-		//DONE Se crea el socket a partir de la dirección proporcionada
+		//// Se crea el socket a partir de la dirección proporcionada
 		this.socket = new Socket(serverAddress.getAddress(), serverAddress.getPort());
-		//DONE Se extraen los streams de entrada y salida
+		//// Se extraen los streams de entrada y salida
 		this.dos = new DataOutputStream(socket.getOutputStream());
 		this.dis = new DataInputStream(socket.getInputStream());
 	}
@@ -30,12 +30,12 @@ public class NCConnector {
 	//Método para registrar el nick en el servidor. Nos informa sobre si la inscripción se hizo con éxito o no.
 	public boolean registerNickname_UnformattedMessage(String nick) throws IOException {
 		//Funcionamiento resumido: SEND(nick) and RCV(NICK_OK) or RCV(NICK_DUPLICATED)
-		//DONE Enviamos una cadena con el nick por el flujo de salida
+		//// Enviamos una cadena con el nick por el flujo de salida
 		this.dos.writeUTF(nick);
 		String res = dis.readUTF();
 		return res.equals("NICK_OK");
-		//DONE Leemos la cadena recibida como respuesta por el flujo de entrada
-		//DONE Si la cadena recibida es NICK_OK entonces no está duplicado (en función de ello modificar el return)
+		//// Leemos la cadena recibida como respuesta por el flujo de entrada
+		//// Si la cadena recibida es NICK_OK entonces no está duplicado (en función de ello modificar el return)
 	}
 
 	

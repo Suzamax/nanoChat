@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import es.um.redes.nanoChat.messageML.NCMessage;
+import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
 /**
@@ -75,10 +75,10 @@ public class NCServerThread extends Thread {
 			this.dos.writeUTF(serverManager.addUser(nick) ? "NICK_OK" : "NICK_DUPLICATED");
 		}
 		//La lógica de nuestro programa nos obliga a que haya un nick registrado antes de proseguir
-		//DONE Entramos en un bucle hasta comprobar que alguno de los nicks proporcionados no está duplicado
-		//DONE Extraer el nick del mensaje
-		//DONE Validar el nick utilizando el ServerManager - addUser()
-		//DONE Contestar al cliente con el resultado (éxito o duplicado)
+		//// Entramos en un bucle hasta comprobar que alguno de los nicks proporcionados no está duplicado
+		//// Extraer el nick del mensaje
+		//// Validar el nick utilizando el ServerManager - addUser()
+		//// Contestar al cliente con el resultado (éxito o duplicado)
 	}
 
 	//Mandamos al cliente la lista de salas existentes
