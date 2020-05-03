@@ -2,6 +2,7 @@ package es.um.redes.nanoChat.messageFV;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -12,12 +13,15 @@ public abstract class NCMessage {
 	////? Implementar el resto de los opcodes para los distintos mensajes
 	public static final byte OP_INVALID_CODE = 0;
 	public static final byte OP_NICK = 1;
-	public static final byte OP_ROOMLIST = 2;
-	public static final byte OP_ENTER = 3;
-	public static final byte OP_IN_ROOM = 4;
-	public static final byte OP_SEND = 5;
-	public static final byte OP_EXIT = 6;
-	public static final byte OP_INFO = 7;
+	public static final byte OP_GET_ROOMS = 2;
+	public static final byte OP_ROOMLIST = 3;
+	public static final byte OP_ENTER = 4;
+	public static final byte OP_IN_ROOM = 5;
+	public static final byte OP_SEND = 6;
+	public static final byte OP_EXIT = 7;
+	public static final byte OP_INFO = 8;
+	public static final byte OP_NICK_OK = 9;
+	public static final byte OP_NICK_DUP = 10;
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -32,19 +36,31 @@ public abstract class NCMessage {
 	 */
 	private static final Byte[] _valid_opcodes = {
 		OP_NICK, //
+		OP_GET_ROOMS, //
 		OP_ROOMLIST, //
 		OP_ENTER, //
-		OP_IN_ROOM, // ?
+		OP_IN_ROOM, //
 		OP_SEND, // 
-		OP_EXIT,
-		OP_INFO,
+		OP_EXIT, //
+		OP_INFO, //
+		OP_NICK_OK, //
+		OP_NICK_DUP, //
 	};
 
 	/**
 	 * cadena exacta de cada orden
 	 */
 	private static final String[] _valid_operations_str = {
-		"Nick",	"Room List", "Enter", "In room", "Send", "Exit", "Info"
+		"Nick",
+		"Get Rooms",
+		"Room List",
+		"Enter",
+		"In room",
+		"Send",
+		"Exit",
+		"Info",
+		"Nick OK",
+		"Nick Duplicated"
 	};
 
 	private static final Map<String, Byte> _operation_to_opcode;
@@ -95,15 +111,16 @@ public abstract class NCMessage {
 			byte code = operationToOpcode(value);
 			switch (code) {
 				case OP_NICK:
-					return NCNickMessage.readFromString(code, message);
-				case OP_ROOMLIST:
-					return NCRoomListMessage.readFromString(code, message);
+				case OP_SEND:
 				case OP_ENTER:
 					return NCRoomMessage.readFromString(code, message);
-				case OP_SEND:
-					return NCSendMessage.readFromString(code, message);
+				case OP_GET_ROOMS:
 				case OP_EXIT:
-					return NCExitMessage.readFromString(code);
+				case OP_NICK_OK:
+				case OP_NICK_DUP:
+					return NCImmediateMessage.readFromString(code);
+				case OP_ROOMLIST:
+					return NCRoomListMessage.readFromString(code, message);
 				case OP_INFO:
 					return NCInfoMessage.readFromString(code, message);
 				case OP_INVALID_CODE:
@@ -117,32 +134,23 @@ public abstract class NCMessage {
 
 
 	//Método para construir un mensaje de tipo RoomList a partir del opcode y del nombre
-	public static NCMessage makeRoomListMessage(byte code, String[] rooms) {
+	public static NCMessage makeRoomListMessage(byte code, List<String> rooms) {
 		return new NCRoomListMessage(code, rooms);
 	}
 
-	//Método para unirse a una sala proveyendo un nombre de sala
+	//Método para crear un mensaje Room proveyendo un nombre de sala, un nick o un mensaje
 	public static NCMessage makeRoomMessage(byte code, String name) {
 		return new NCRoomMessage(code, name);
 	}
 
-	// Método para construir un mensaje de tipo Nick a partir del opcode y el nick dado
-	public static NCMessage makeNickMessage(byte code, String nick) {
-		return new NCNickMessage(code, nick);
-	}
-
-	// Método para construir un mensaje de tipo Nick a partir del opcode y un mensaje
-	public static NCMessage makeSendMessage(byte code, String msg) {
-		return new NCNickMessage(code, msg);
-	}
-
 	// Método para construir un mensaje de tipo Info a partir del opcode, la sala dada y los usuarios en ello
-	public static NCMessage makeInfoMessage(byte code, String room, String[] users) {
+	public static NCMessage makeInfoMessage(byte code, String room, List<String> users) {
 		return new NCInfoMessage(code, room, users);
 	}
 
-	// Método para construir un mensaje de de salida con el opcode
-	public static NCMessage makeExitMessage(byte code) {
-		return new NCExitMessage(code);
+	// Método para construir un mensaje inmediato con el opcode de salida, confirmación
+	// o denegación de nick, u obtención de salas
+	public static NCMessage makeImmediateMessage(byte code) {
+		return new NCImmediateMessage(code);
 	}
 }

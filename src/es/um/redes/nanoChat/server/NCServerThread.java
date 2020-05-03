@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
@@ -71,8 +72,16 @@ public class NCServerThread extends Thread {
 	//Obtenemos el nick y solicitamos al ServerManager que verifique si está duplicado
 	private void receiveAndVerifyNickname() throws IOException {
 		while (!socket.isClosed()) {
-			String nick = this.dis.readUTF();
-			this.dos.writeUTF(serverManager.addUser(nick) ? "NICK_OK" : "NICK_DUPLICATED");
+			String nick_raw = this.dis.readUTF();
+			String line = nick_raw.split(String.valueOf('\n'))[1];
+			int idx = line.indexOf(':');
+			String nick = line.substring(idx + 1).trim();
+			NCImmediateMessage res = null;
+			if (serverManager.addUser(nick)) res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_OK);
+			else res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_DUP);
+			String res_raw = res.toEncodedString();
+			this.dos.writeUTF(res_raw);
+
 		}
 		//La lógica de nuestro programa nos obliga a que haya un nick registrado antes de proseguir
 		//// Entramos en un bucle hasta comprobar que alguno de los nicks proporcionados no está duplicado

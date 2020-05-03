@@ -1,12 +1,16 @@
 package es.um.redes.nanoChat.messageFV;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+
 public class NCRoomListMessage extends NCMessage {
 
-    private String[] rooms;
+    private List<String> rooms;
 
     static protected final String NAME_FIELD = "roomlist";
 
-    public NCRoomListMessage(byte type, String[] rooms) {
+    public NCRoomListMessage(byte type, List<String> rooms) {
         this.opcode = type;
         this.rooms = rooms;
     }
@@ -17,19 +21,27 @@ public class NCRoomListMessage extends NCMessage {
 
         sb.append(OPCODE_FIELD + DELIMITER + opcodeToOperation(opcode) + END_LINE);
         sb.append(NAME_FIELD + DELIMITER);
-        for (String room : rooms) sb.append(room + ',');
-        sb.append(END_LINE + END_LINE);
+        ListIterator<String> lis = null;
+        lis = rooms.listIterator();
+        
+        while (lis.hasNext()) {
+            sb.append(lis.next().trim());
+            if (lis.hasNext()) sb.append(",");
+            else sb.append(END_LINE);
+        }
+        sb.append(END_LINE);
 
         return sb.toString();
     }
 
     public static NCRoomListMessage readFromString(byte code, String message) {
         String[] lines = message.split(String.valueOf(END_LINE));
-        String[] rooms = null;
+        List<String> rooms = null;
         int idx = lines[1].indexOf(DELIMITER);
         String field = lines[1].substring(0, idx).toLowerCase();
-        String value_raw = lines[1].substring(idx + 1).trim();
-        String[] value = value_raw.split(String.valueOf(','));
+        String[] value_raw = lines[1].substring(idx + 1).trim().split(String.valueOf(","));
+        List<String> value = new ArrayList<String>();
+        for (String r : value_raw) value.add(r);
         if (field.equalsIgnoreCase(NAME_FIELD)) 
             rooms = value;
 
@@ -39,7 +51,7 @@ public class NCRoomListMessage extends NCMessage {
     /**
      * @return the users
      */
-    public String[] getRooms() {
+    public List<String> getRooms() {
         return rooms;
     }
 }

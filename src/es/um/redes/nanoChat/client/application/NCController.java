@@ -96,8 +96,9 @@ public class NCController {
 	private void registerNickName() {
 		try {
 			//Pedimos que se registre el nick (se comprobará si está duplicado)
-			boolean registered = ncConnector.registerNickname_UnformattedMessage(nickname);
-			//TODO: Cambiar la llamada anterior a registerNickname() al usar mensajes formateados 
+			// boolean registered = ncConnector.registerNickname_UnformattedMessage(nickname);
+			////: Cambiar la llamada anterior a registerNickname() al usar mensajes formateados 
+			boolean registered = ncConnector.registerNickname(nickname);
 			if (registered) {
 				// // Si el registro fue exitoso pasamos al siguiente estado del autómata
 				System.out.println("* Your nickname is now " + nickname);

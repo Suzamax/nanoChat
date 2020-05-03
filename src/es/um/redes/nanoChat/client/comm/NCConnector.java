@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import es.um.redes.nanoChat.messageFV.NCMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
 import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
@@ -48,11 +49,12 @@ public class NCConnector {
 		String rawMessage = message.toEncodedString();
 		//Escribimos el mensaje en el flujo de salida, es decir, provocamos que se envíe por la conexión TCP
 		this.dos.writeUTF(rawMessage);
-		//TODO Leemos el mensaje recibido como respuesta por el flujo de entrada
+		//// Leemos el mensaje recibido como respuesta por el flujo de entrada
 		String res = this.dis.readUTF();
-		//TODO Analizamos el mensaje para saber si está duplicado el nick (modificar el return en consecuencia)
-
-		return true;
+		//// Analizamos el mensaje para saber si está duplicado el nick (modificar el return en consecuencia)
+		String[] lines = res.split(String.valueOf('\n'));
+		int idx = lines[0].indexOf(':'); // Posición del delimitador
+		return lines[0].substring(idx + 1).trim().equals("Nick OK");
 	}
 	
 	//Método para obtener la lista de salas del servidor

@@ -1,10 +1,8 @@
 package es.um.redes.nanoChat.messageFV;
 
-public class NCExitMessage extends NCMessage {
+public class NCImmediateMessage extends NCMessage{
 
-    static protected final String NAME_FIELD = "exit";
-
-    public NCExitMessage(byte type) {
+    public NCImmediateMessage(byte type) {
         this.opcode = type;
     }
 
@@ -18,7 +16,8 @@ public class NCExitMessage extends NCMessage {
         return sb.toString();
     }
 
-    public static NCExitMessage readFromString(byte code) {
-        return new NCExitMessage(code);
+    public static NCImmediateMessage readFromString(byte code) {
+        return new NCImmediateMessage(code);
     }
+
 }
