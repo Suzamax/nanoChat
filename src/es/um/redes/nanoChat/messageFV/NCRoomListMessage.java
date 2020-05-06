@@ -1,12 +1,13 @@
 package es.um.redes.nanoChat.messageFV;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
 public class NCRoomListMessage extends NCMessage {
 
-    private List<String> rooms;
+    private final List<String> rooms;
 
     static protected final String NAME_FIELD = "roomlist";
 
@@ -41,7 +42,7 @@ public class NCRoomListMessage extends NCMessage {
         String field = lines[1].substring(0, idx).toLowerCase();
         String[] value_raw = lines[1].substring(idx + 1).trim().split(String.valueOf(","));
         List<String> value = new ArrayList<String>();
-        for (String r : value_raw) value.add(r);
+        Collections.addAll(value, value_raw); // for (String r : value_raw) value.add(r);
         if (field.equalsIgnoreCase(NAME_FIELD)) 
             rooms = value;
 

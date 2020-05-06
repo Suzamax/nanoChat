@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
@@ -60,7 +61,17 @@ public class NCConnector {
 	//Método para obtener la lista de salas del servidor
 	public List<NCRoomDescription> getRooms() throws IOException {
 		//Funcionamiento resumido: SND(GET_ROOMS) and RCV(ROOM_LIST)
-		//TODO completar el método
+		// TODO completar el método
+		List<NCRoomDescription> list = null;
+		NCImmediateMessage msg_get_rooms =
+			(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_GET_ROOMS);
+		String raw = msg_get_rooms.toEncodedString();
+		this.dos.writeUTF(raw);
+		String res_raw = this.dis.readUTF(); // Recibes un ROOMLIST
+		String[] lines = res_raw.split(String.valueOf('\n'));
+		int idx = lines[1].indexOf(':');
+		// TODO por cada sala obtener su NCRoomDescription
+		String[] rooms = lines[1].substring(idx+1).trim().split(String.valueOf(','));
 
 		return null;
 	}

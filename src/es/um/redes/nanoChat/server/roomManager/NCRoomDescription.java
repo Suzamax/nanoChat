@@ -19,12 +19,18 @@ public class NCRoomDescription {
 	//Método que devuelve una representación de la Descripción lista para ser impresa por pantalla
 	public String toPrintableString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("Room Name: "+roomName+"\t Members ("+members.size()+ ") : ");
+		sb.append("Room Name: ")
+				.append(roomName)
+				.append("\t Members (")
+				.append(members.size())
+				.append(") : ");
 		for (String member: members) {
-			sb.append(member+" ");
+			sb.append(member)
+				.append(" ");
 		}
 		if (timeLastMessage != 0)
-			sb.append("\tLast message: "+new Date(timeLastMessage).toString());
+			sb.append("\tLast message: ")
+				.append(new Date(timeLastMessage).toString());
 		else
 			sb.append("\tLast message: not yet");
 		return sb.toString();
