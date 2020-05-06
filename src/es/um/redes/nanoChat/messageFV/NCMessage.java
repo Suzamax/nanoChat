@@ -1,5 +1,7 @@
 package es.um.redes.nanoChat.messageFV;
 
+import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -17,11 +19,12 @@ public abstract class NCMessage {
 	public static final byte OP_ROOMLIST = 3;
 	public static final byte OP_ENTER = 4;
 	public static final byte OP_IN_ROOM = 5;
-	public static final byte OP_SEND = 6;
-	public static final byte OP_EXIT = 7;
-	public static final byte OP_INFO = 8;
-	public static final byte OP_NICK_OK = 9;
-	public static final byte OP_NICK_DUP = 10;
+	public static final byte OP_NO_ROOM = 6;
+	public static final byte OP_SEND = 7;
+	public static final byte OP_EXIT = 8;
+	public static final byte OP_INFO = 9;
+	public static final byte OP_NICK_OK = 10;
+	public static final byte OP_NICK_DUP = 11;
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -134,7 +137,7 @@ public abstract class NCMessage {
 
 
 	//Método para construir un mensaje de tipo RoomList a partir del opcode y del nombre
-	public static NCMessage makeRoomListMessage(byte code, List<String> rooms) {
+	public static NCMessage makeRoomListMessage(byte code, List<NCRoomDescription> rooms) {
 		return new NCRoomListMessage(code, rooms);
 	}
 

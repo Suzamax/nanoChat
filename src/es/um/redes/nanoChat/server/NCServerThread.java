@@ -7,6 +7,9 @@ import java.net.Socket;
 
 import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomMessage;
+import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
 /**
@@ -16,7 +19,7 @@ public class NCServerThread extends Thread {
 	
 	private Socket socket = null;
 	//Manager global compartido entre los Threads
-	private NCServerManager serverManager = null;
+	private NCServerManager serverManager;
 	//Input and Output Streams
 	private DataInputStream dis;
 	private DataOutputStream dos;
@@ -47,15 +50,36 @@ public class NCServerThread extends Thread {
 				//TODO Obtenemos el mensaje que llega y analizamos su código de operación
 				NCMessage message = NCMessage.readMessageFromSocket(dis);
 				switch (message.getOpcode()) {
-				//TODO 1) si se nos pide la lista de salas se envía llamando a sendRoomList();
-				//TODO 2) Si se nos pide entrar en la sala entonces obtenemos el RoomManager de la sala,
-				//TODO 2) notificamos al usuario que ha sido aceptado y procesamos mensajes con processRoomMessages()
-				//TODO 2) Si el usuario no es aceptado en la sala entonces se le notifica al cliente
+				//// 1) si se nos pide la lista de salas se envía llamando a sendRoomList();
+					case NCMessage.OP_GET_ROOMS:
+						sendRoomList();
+						break;
+				//// 2) Si se nos pide entrar en la sala entonces obtenemos el RoomManager de la sala,
+					case NCMessage.OP_ENTER:
+						if (message instanceof NCRoomMessage) {
+							String room = ((NCRoomMessage) message).getMsg();
+							this.roomManager = serverManager.enterRoom(this.user, room, this.socket);
+						}
+				//// 2) notificamos al usuario que ha sido aceptado y procesamos mensajes con processRoomMessages()
+						if (this.roomManager != null) {
+							NCImmediateMessage ok =
+									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_IN_ROOM);
+							String ok2send = ok.toEncodedString();
+							this.dos.writeUTF(ok2send);
+							processRoomMessages();
+						}
+				//// 2) Si el usuario no es aceptado en la sala entonces se le notifica al cliente
+						else {
+							NCImmediateMessage nok =
+									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NO_ROOM);
+							String nok2send = nok.toEncodedString();
+							this.dos.writeUTF(nok2send);
+						}
 				}
 			}
 		} catch (Exception e) {
 			//If an error occurs with the communications the user is removed from all the managers and the connection is closed
-			System.out.println("* User "+ user + " disconnected.");
+			System.out.println("* User " + user + " disconnected.");
 			serverManager.leaveRoom(user, currentRoom);
 			serverManager.removeUser(user);
 		}
@@ -91,8 +115,14 @@ public class NCServerThread extends Thread {
 	}
 
 	//Mandamos al cliente la lista de salas existentes
-	private void sendRoomList()  {
-		//TODO La lista de salas debe obtenerse a partir del RoomManager y después enviarse mediante su mensaje correspondiente
+	private void sendRoomList() throws IOException {
+		//// La lista de salas debe obtenerse a partir del RoomManager y después enviarse mediante su mensaje correspondiente
+		NCRoomListMessage rl =
+				(NCRoomListMessage) NCMessage
+						.makeRoomListMessage(NCMessage.OP_ROOMLIST, serverManager.getRoomList());
+		String encodedRL = rl.toEncodedString();
+		// Enviar un serverManager.getRoomList()
+		this.dos.writeUTF(encodedRL);
 	}
 
 	private void processRoomMessages()  {
@@ -100,6 +130,7 @@ public class NCServerThread extends Thread {
 		boolean exit = false;
 		while (!exit) {
 			//TODO Se recibe el mensaje enviado por el usuario
+
 			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
 		}
 	}
