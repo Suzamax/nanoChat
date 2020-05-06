@@ -6,12 +6,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
-import es.um.redes.nanoChat.messageFV.NCMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomMessage;
+import es.um.redes.nanoChat.messageFV.*;
 import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
 //Esta clase proporciona la funcionalidad necesaria para intercambiar mensajes entre el cliente y el servidor de NanoChat
@@ -61,19 +60,38 @@ public class NCConnector {
 	//Método para obtener la lista de salas del servidor
 	public List<NCRoomDescription> getRooms() throws IOException {
 		//Funcionamiento resumido: SND(GET_ROOMS) and RCV(ROOM_LIST)
-		// TODO completar el método
-		List<NCRoomDescription> list = null;
+		//// completar el método
+		List<NCRoomDescription> list = new ArrayList<>();
 		NCImmediateMessage msg_get_rooms =
 			(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_GET_ROOMS);
 		String raw = msg_get_rooms.toEncodedString();
 		this.dos.writeUTF(raw);
 		String res_raw = this.dis.readUTF(); // Recibes un ROOMLIST
 		String[] lines = res_raw.split(String.valueOf('\n'));
-		int idx = lines[1].indexOf(':');
-		// TODO por cada sala obtener su NCRoomDescription
-		String[] rooms = lines[1].substring(idx+1).trim().split(String.valueOf(','));
-
-		return null;
+		int idx;
+		String f, v, room = null;
+		List<String> users = new ArrayList<>();
+		long time = 0;
+		//// por cada sala obtener su NCRoomDescription
+		for (String l : lines) {
+			idx = l.indexOf(NCMessage.DELIMITER);
+			f = l.substring(0, idx);
+			v = l.substring(idx).trim();
+			switch (f) {
+				case NCRoomListMessage.NAME_FIELD:
+					room = v;
+					break;
+				case NCRoomListMessage.USER_FIELD:
+					String[] members = v.trim().split(String.valueOf(','));
+					Collections.addAll(users, members);
+					break;
+				case NCRoomListMessage.LAST_MSG:
+					time = Long.parseLong(v);
+					break;
+			}
+			list.add(new NCRoomDescription(room, users, time));
+		}
+		return list;
 	}
 	
 	//Método para solicitar la entrada en una sala
@@ -89,7 +107,9 @@ public class NCConnector {
 	//Método para salir de una sala
 	public void leaveRoom(String room) throws IOException {
 		//Funcionamiento resumido: SND(EXIT_ROOM)
-		//TODO completar el método
+		//// completar el método
+		NCImmediateMessage exit = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_EXIT);
+		this.dos.writeUTF(exit.toEncodedString());
 	}
 	
 	//Método que utiliza el Shell para ver si hay datos en el flujo de entrada
@@ -103,16 +123,20 @@ public class NCConnector {
 	//Método para pedir la descripción de una sala
 	public NCRoomDescription getRoomInfo(String room) throws IOException {
 		//Funcionamiento resumido: SND(GET_ROOMINFO) and RCV(ROOMINFO)
-		//TODO Construimos el mensaje de solicitud de información de la sala específica
-		//TODO Recibimos el mensaje de respuesta
-		//TODO Devolvemos la descripción contenida en el mensaje
+		//// Construimos el mensaje de solicitud de información de la sala específica
+		NCImmediateMessage msg = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_INFO);
+		this.dos.writeUTF(msg.toEncodedString());
+		//// Recibimos el mensaje de respuesta
+		NCInfoMessage res = (NCInfoMessage) NCMessage.readMessageFromSocket(dis);
+		//// Devolvemos la descripción contenida en el mensaje
+
 		return null;
 	}
 
 
 	
 	//Método para cerrar la comunicación con la sala
-	//TODO (Opcional) Enviar un mensaje de salida del servidor de Chat
+	// ? OPTODO (Opcional) Enviar un mensaje de salida del servidor de Chat
 	public void disconnect() {
 		try {
 			if (socket != null) {

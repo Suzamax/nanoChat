@@ -2,11 +2,13 @@ package es.um.redes.nanoChat.client.application;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import es.um.redes.nanoChat.client.comm.NCConnector;
 import es.um.redes.nanoChat.client.shell.NCCommands;
 import es.um.redes.nanoChat.client.shell.NCShell;
 import es.um.redes.nanoChat.directory.connector.DirectoryConnector;
+import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
 public class NCController {
 	//Diferentes estados del cliente de acuerdo con el autómata
@@ -77,11 +79,16 @@ public class NCController {
 			break;
 		case NCCommands.COM_ROOMLIST:
 			//TODO LLamar a getAndShowRooms() si el estado actual del autómata lo permite
+			if (this.nickname != null)
+				getAndShowRooms();
 			//TODO Si no está permitido informar al usuario
 			break;
 		case NCCommands.COM_ENTER:
 			//TODO LLamar a enterChat() si el estado actual del autómata lo permite
+			if (this.room == null)
+				enterChat(room);
 			//TODO Si no está permitido informar al usuario
+
 			break;
 		case NCCommands.COM_QUIT:
 			//Cuando salimos tenemos que cerrar todas las conexiones y sockets abiertos
@@ -112,25 +119,38 @@ public class NCController {
 	}
 
 	//Método que solicita al servidor de NanoChat la lista de salas e imprime el resultado obtenido
-	private void getAndShowRooms() {
-		//TODO Lista que contendrá las descripciones de las salas existentes
-		//TODO Le pedimos al conector que obtenga la lista de salas ncConnector.getRooms()
-		//TODO Una vez recibidas iteramos sobre la lista para imprimir información de cada sala
+	private void getAndShowRooms() throws IOException {
+		//// Lista que contendrá las descripciones de las salas existentes
+		//// Le pedimos al conector que obtenga la lista de salas ncConnector.getRooms()
+		List<NCRoomDescription> rooms = ncConnector.getRooms();
+		//// Una vez recibidas iteramos sobre la lista para imprimir información de cada sala
+		for (NCRoomDescription room : rooms) {
+			System.out.println("Room: " + room.roomName);
+			System.out.println("Members:");
+			for (String m : room.members) System.out.println("\t" + m);
+			System.out.println("Last message: " + room.timeLastMessage);
+		}
 	}
 
 	//Método para tramitar la solicitud de acceso del usuario a una sala concreta
-	private void enterChat() {
-		//TODO Se solicita al servidor la entrada en la sala correspondiente ncConnector.enterRoom()
-		//TODO Si la respuesta es un rechazo entonces informamos al usuario y salimos
-		//TODO En caso contrario informamos que estamos dentro y seguimos
-		//TODO Cambiamos el estado del autómata para aceptar nuevos comandos
-		do {
-			//Pasamos a aceptar sólo los comandos que son válidos dentro de una sala
-			readRoomCommandFromShell();
-			processRoomCommand();
-		} while (currentCommand != NCCommands.COM_EXIT);
-		System.out.println("* Your are out of the room");
-		//TODO Llegados a este punto el usuario ha querido salir de la sala, cambiamos el estado del autómata
+	private void enterChat(String r) throws IOException {
+		//// Se solicita al servidor la entrada en la sala correspondiente ncConnector.enterRoom()
+		//// Si la respuesta es un rechazo entonces informamos al usuario y salimos
+		if (!ncConnector.enterRoom(r)) System.out.println("Can't enter " + r +" \uD83D\uDE02\uD83D\uDC4C");
+		//// En caso contrario informamos que estamos dentro y seguimos
+		else {
+			this.room = r;
+			System.out.println("You have entered " + room + "!");
+			//// Cambiamos el estado del autómata para aceptar nuevos comandos
+			do {
+				//Pasamos a aceptar sólo los comandos que son válidos dentro de una sala
+				readRoomCommandFromShell();
+				processRoomCommand();
+			} while (currentCommand != NCCommands.COM_EXIT);
+			System.out.println("* Your are out of the room");
+			//// Llegados a este punto el usuario ha querido salir de la sala, cambiamos el estado del autómata
+			this.room = null;
+		}
 	}
 
 	//Método para procesar los comandos específicos de una sala

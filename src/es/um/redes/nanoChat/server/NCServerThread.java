@@ -99,9 +99,9 @@ public class NCServerThread extends Thread {
 			String nick_raw = this.dis.readUTF();
 			String line = nick_raw.split(String.valueOf('\n'))[1];
 			int idx = line.indexOf(':');
-			String nick = line.substring(idx + 1).trim();
+			user = line.substring(idx + 1).trim();
 			NCImmediateMessage res = null;
-			if (serverManager.addUser(nick)) res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_OK);
+			if (serverManager.addUser(user)) res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_OK);
 			else res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_DUP);
 			String res_raw = res.toEncodedString();
 			this.dos.writeUTF(res_raw);
