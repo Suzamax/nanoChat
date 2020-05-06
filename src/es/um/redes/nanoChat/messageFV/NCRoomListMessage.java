@@ -33,7 +33,7 @@ public class NCRoomListMessage extends NCMessage {
             sb.append(current.roomName).append(END_LINE).append(USER_FIELD + DELIMITER);
             ListIterator<String> name = current.members.listIterator();
             while (name.hasNext()) {
-                sb.append(name);
+                sb.append(name.next());
                 if (name.hasNext()) sb.append(',');
             }
             sb.append(END_LINE);

@@ -3,6 +3,7 @@ import es.um.redes.nanoChat.messageFV.NCInfoMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
+import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,17 +27,25 @@ public class MessageTests {
 
     @Test
     void TestRooms() {
-        List<String> rooms = new ArrayList<String>();
-        rooms.add("SalaEstudio");
-        rooms.add("SalaRecreo");
+        List<NCRoomDescription> rooms = new ArrayList<NCRoomDescription>();
+        String rname = "Tesla";
+        List<String> users = new ArrayList<String>();
+        users.add("ElonMusk");
+        users.add("Grimes");
+        users.add("XÆA12");
+        rooms.add(new NCRoomDescription(rname, users, 0));
         NCRoomListMessage msg = (NCRoomListMessage) NCMessage.makeRoomListMessage(NCMessage.OP_ROOMLIST, rooms);
         // Parseo
         String seriald = msg.toEncodedString();
         // read
-        NCMessage res = NCRoomListMessage.readFromString(NCMessage.OP_ROOMLIST, seriald);
+        NCRoomListMessage res = NCRoomListMessage.readFromString(NCMessage.OP_ROOMLIST, seriald);
         // Comparar
         assertEquals(msg.getOpcode(), res.getOpcode());
-        assertEquals(((NCRoomListMessage) msg).getRooms(), ((NCRoomListMessage) res).getRooms());
+        for (NCRoomDescription room : msg.getRooms()) {
+            assertEquals(room.members, users);
+            assertEquals(room.roomName, rname);
+            assertEquals(room.timeLastMessage, 0);
+        }
     }
 
     @Test

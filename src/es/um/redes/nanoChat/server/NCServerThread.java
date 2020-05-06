@@ -47,7 +47,7 @@ public class NCServerThread extends Thread {
 			receiveAndVerifyNickname();
 			//Mientras que la conexión esté activa entonces...
 			while (true) {
-				//TODO Obtenemos el mensaje que llega y analizamos su código de operación
+				//// Obtenemos el mensaje que llega y analizamos su código de operación
 				NCMessage message = NCMessage.readMessageFromSocket(dis);
 				switch (message.getOpcode()) {
 				//// 1) si se nos pide la lista de salas se envía llamando a sendRoomList();
