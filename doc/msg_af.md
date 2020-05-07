@@ -124,17 +124,17 @@ La interacción cliente-servidor se ha dividido en dos autómatas para mayor cla
 
 ## Autómata del cliente con el directorio
 
-![Autómata de cliente a directorio](./cliente_dir.png)
+![Autómata de cliente a directorio](automatas_viejos/cliente_dir.png)
 
 ## Autómata del servidor con el directorio
 
-![Autómata de servidor a directorio](./srv_dir.png)
+![Autómata de servidor a directorio](automatas_viejos/srv_dir.png)
 
 
 ## Autómata del servidor para recibir peticiones del cliente y procesarlas
 
-![Autómata de servidor a cliente](./servidor.png)
+![Autómata de servidor a cliente](automatas_viejos/servidor.png)
 
 ## Autómata del cliente para enviar peticiones al servidor y recibir respuestas
 
-![Autómata de cliente a servidor](./cliente.png)
+![Autómata de cliente a servidor](automatas_viejos/cliente.png)

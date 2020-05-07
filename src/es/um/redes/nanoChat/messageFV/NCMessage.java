@@ -13,18 +13,22 @@ public abstract class NCMessage {
 	protected byte opcode;
 
 	////? Implementar el resto de los opcodes para los distintos mensajes
-	public static final byte OP_INVALID_CODE = 0;
-	public static final byte OP_NICK = 1;
-	public static final byte OP_GET_ROOMS = 2;
-	public static final byte OP_ROOMLIST = 3;
-	public static final byte OP_ENTER = 4;
-	public static final byte OP_IN_ROOM = 5;
-	public static final byte OP_NO_ROOM = 6;
-	public static final byte OP_SEND = 7;
-	public static final byte OP_EXIT = 8;
-	public static final byte OP_INFO = 9;
-	public static final byte OP_NICK_OK = 10;
-	public static final byte OP_NICK_DUP = 11;
+	public static final byte OP_INVALID_CODE = 0; // Default
+	public static final byte OP_NICK         = 1; // SEND
+	public static final byte OP_NICK_OK      = 2; // RCV
+	public static final byte OP_NICK_DUP     = 3; // RCV
+	public static final byte OP_GET_ROOMS    = 4; // SEND
+	public static final byte OP_ROOMLIST     = 5; // RCV
+	public static final byte OP_ENTER        = 6; // SEND
+	public static final byte OP_IN_ROOM      = 7; // RCV
+	public static final byte OP_NO_ROOM      = 8; // RCV
+	public static final byte OP_JOIN         = 9; // RCV
+	public static final byte OP_SEND         = 10; // SEND (msg)
+	public static final byte OP_MSG          = 11; // RCV (msg)
+	public static final byte OP_EXIT         = 12; // SEND
+	public static final byte OP_GONE		 = 13; // RCV
+	public static final byte OP_INFO         = 14; // RCV
+
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -147,8 +151,8 @@ public abstract class NCMessage {
 	}
 
 	// Método para construir un mensaje de tipo Info a partir del opcode, la sala dada y los usuarios en ello
-	public static NCMessage makeInfoMessage(byte code, String room, List<String> users) {
-		return new NCInfoMessage(code, room, users);
+	public static NCMessage makeInfoMessage(byte code, String room, List<String> users, long time) {
+		return new NCInfoMessage(code, room, users, time);
 	}
 
 	// Método para construir un mensaje inmediato con el opcode de salida, confirmación

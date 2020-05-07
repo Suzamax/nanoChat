@@ -19,7 +19,7 @@ public class NCServerThread extends Thread {
 	
 	private Socket socket = null;
 	//Manager global compartido entre los Threads
-	private NCServerManager serverManager;
+	private final NCServerManager serverManager;
 	//Input and Output Streams
 	private DataInputStream dis;
 	private DataOutputStream dos;
@@ -64,8 +64,10 @@ public class NCServerThread extends Thread {
 						if (this.roomManager != null) {
 							NCImmediateMessage ok =
 									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_IN_ROOM);
-							String ok2send = ok.toEncodedString();
-							this.dos.writeUTF(ok2send);
+							this.dos.writeUTF(ok.toEncodedString());
+							NCRoomMessage joins =
+									(NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_JOIN, this.user);
+							this.dos.writeUTF(joins.toEncodedString());
 							processRoomMessages();
 						}
 				//// 2) Si el usuario no es aceptado en la sala entonces se le notifica al cliente
@@ -125,13 +127,19 @@ public class NCServerThread extends Thread {
 		this.dos.writeUTF(encodedRL);
 	}
 
-	private void processRoomMessages()  {
+	private void processRoomMessages() throws IOException {
 		//TODO Comprobamos los mensajes que llegan hasta que el usuario decida salir de la sala
 		boolean exit = false;
 		while (!exit) {
 			//TODO Se recibe el mensaje enviado por el usuario
-
+			String[] new_msgs_raw = this.dis.readUTF().split(String.valueOf(NCMessage.END_LINE));
 			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
+			int idx = new_msgs_raw[0].indexOf(NCMessage.DELIMITER); // Separador entre indicador de op y el nº de op
+			int op = Integer.getInteger(new_msgs_raw[0].substring(idx+1).trim()); // Obtenemos op
+			switch (op) {
+				case NCMessage.OP_MSG:
+
+			}
 		}
 	}
 }

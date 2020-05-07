@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import es.um.redes.nanoChat.messageFV.*;
+import es.um.redes.nanoChat.server.roomManager.NCRoom;
 import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
 //Esta clase proporciona la funcionalidad necesaria para intercambiar mensajes entre el cliente y el servidor de NanoChat
@@ -76,7 +77,7 @@ public class NCConnector {
 		for (String l : lines) {
 			idx = l.indexOf(NCMessage.DELIMITER);
 			f = l.substring(0, idx);
-			v = l.substring(idx).trim();
+			v = l.substring(idx+1).trim();
 			switch (f) {
 				case NCRoomListMessage.NAME_FIELD:
 					room = v;
@@ -129,11 +130,19 @@ public class NCConnector {
 		//// Recibimos el mensaje de respuesta
 		NCInfoMessage res = (NCInfoMessage) NCMessage.readMessageFromSocket(dis);
 		//// Devolvemos la descripción contenida en el mensaje
-
+		NCRoomDescription rd = new NCRoomDescription(res.getRoom(), res.getUsers(), res.getTime());
 		return null;
 	}
 
+	// Método para enviar mensajes en una sala
+	public void sendMsg(String m) throws IOException {
+		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_SEND, m);
+		this.dos.writeUTF(msg.toEncodedString());
+	}
 
+	public NCMessage rcvMsg() throws IOException {
+		return NCMessage.readMessageFromSocket(this.dis);
+	}
 	
 	//Método para cerrar la comunicación con la sala
 	// ? OPTODO (Opcional) Enviar un mensaje de salida del servidor de Chat
