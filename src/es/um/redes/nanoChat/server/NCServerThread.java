@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.ParseException;
 
 import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
@@ -96,14 +97,21 @@ public class NCServerThread extends Thread {
 	}
 
 	//Obtenemos el nick y solicitamos al ServerManager que verifique si está duplicado
-	private void receiveAndVerifyNickname() throws IOException {
-		while (!socket.isClosed()) {
-			String nick_raw = this.dis.readUTF();
-			String line = nick_raw.split(String.valueOf('\n'))[1];
+	private void receiveAndVerifyNickname() throws IOException, ParseException {
+		String nick;
+		boolean isDup = true;
+		while (isDup) { //- !socket.isClosed()) {
+			NCRoomMessage nickMsg = (NCRoomMessage) NCMessage.readMessageFromSocket(dis); //this.dis.readUTF();
+			nick = nickMsg.getMsg();
+			/*String line = nick_raw.split(String.valueOf('\n'))[1];
 			int idx = line.indexOf(':');
-			user = line.substring(idx + 1).trim();
+			user = line.substring(idx + 1).trim(); */
 			NCImmediateMessage res = null;
-			if (serverManager.addUser(user)) res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_OK);
+			if (serverManager.addUser(nick)) {
+				user = nick.trim();
+				res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_OK);
+				isDup = false;
+			}
 			else res = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_NICK_DUP);
 			String res_raw = res.toEncodedString();
 			this.dos.writeUTF(res_raw);

@@ -4,6 +4,8 @@ import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,16 +44,21 @@ public abstract class NCMessage {
 	 * que aparece en los mensajes
 	 */
 	private static final Byte[] _valid_opcodes = {
-		OP_NICK, //
+		OP_NICK,
+		OP_NICK_OK,
+		OP_NICK_DUP,
 		OP_GET_ROOMS, //
 		OP_ROOMLIST, //
 		OP_ENTER, //
 		OP_IN_ROOM, //
-		OP_SEND, // 
+		OP_NO_ROOM,
+		OP_JOIN,
+		OP_SEND, //
+		OP_MSG,
 		OP_EXIT, //
+		OP_GONE,
 		OP_INFO, //
-		OP_NICK_OK, //
-		OP_NICK_DUP, //
+
 	};
 
 	/**
@@ -59,15 +66,20 @@ public abstract class NCMessage {
 	 */
 	private static final String[] _valid_operations_str = {
 		"Nick",
+		"Nick OK",
+		"Nick Duplicated",
 		"Get Rooms",
 		"Room List",
 		"Enter",
 		"In room",
+		"No room",
+		"Join",
 		"Send",
+		"Message",
 		"Exit",
+		"Gone",
 		"Info",
-		"Nick OK",
-		"Nick Duplicated"
+
 	};
 
 	private static final Map<String, Byte> _operation_to_opcode;
@@ -106,8 +118,9 @@ public abstract class NCMessage {
 	protected abstract String toEncodedString();
 
 	//Extrae la operación del mensaje entrante y usa la subclase para parsear el resto del mensaje
-	public static NCMessage readMessageFromSocket(DataInputStream dis) throws IOException {
+	public static NCMessage readMessageFromSocket(DataInputStream dis) throws IOException, ParseException {
 		String message = dis.readUTF();
+
 		String[] lines = message.split(String.valueOf(END_LINE));
 		if (!lines[0].isEmpty()) { // Si la línea no está vacía
 			int idx = lines[0].indexOf(DELIMITER); // Posición del delimitador
@@ -141,7 +154,7 @@ public abstract class NCMessage {
 
 
 	//Método para construir un mensaje de tipo RoomList a partir del opcode y del nombre
-	public static NCMessage makeRoomListMessage(byte code, List<NCRoomDescription> rooms) {
+	public static NCMessage makeRoomListMessage(byte code, ArrayList<NCRoomDescription> rooms) {
 		return new NCRoomListMessage(code, rooms);
 	}
 

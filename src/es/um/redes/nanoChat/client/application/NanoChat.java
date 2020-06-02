@@ -1,5 +1,8 @@
 package es.um.redes.nanoChat.client.application;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 public class NanoChat {
 
 	public static void main(String[] args) {
@@ -21,7 +24,11 @@ public class NanoChat {
 				// hasta que el usuario quiera salir de la aplicación.
 				do {
 					controller.readGeneralCommandFromShell();
-					controller.processCommand();
+					try {
+						controller.processCommand();
+					} catch (IOException | ParseException e) {
+						e.printStackTrace();
+					}
 				} while (!controller.shouldQuit());
 			}
 			else

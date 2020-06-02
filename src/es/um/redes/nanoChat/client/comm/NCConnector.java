@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,15 +60,18 @@ public class NCConnector {
 	}
 	
 	//Método para obtener la lista de salas del servidor
-	public List<NCRoomDescription> getRooms() throws IOException {
+	public ArrayList<NCRoomDescription> getRooms() throws IOException, ParseException {
 		//Funcionamiento resumido: SND(GET_ROOMS) and RCV(ROOM_LIST)
 		//// completar el método
-		List<NCRoomDescription> list = new ArrayList<>();
 		NCImmediateMessage msg_get_rooms =
 			(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_GET_ROOMS);
 		String raw = msg_get_rooms.toEncodedString();
 		this.dos.writeUTF(raw);
-		String res_raw = this.dis.readUTF(); // Recibes un ROOMLIST
+
+		NCRoomListMessage res = (NCRoomListMessage) NCMessage.readMessageFromSocket(dis);
+
+		return (res.getOpcode() == NCMessage.OP_ROOMLIST) ? res.getRooms() : null;
+		/*
 		String[] lines = res_raw.split(String.valueOf('\n'));
 		int idx;
 		String f, v, room = null;
@@ -93,10 +97,11 @@ public class NCConnector {
 			list.add(new NCRoomDescription(room, users, time));
 		}
 		return list;
+		 */
 	}
 	
 	//Método para solicitar la entrada en una sala
-	public boolean enterRoom(String room) throws IOException {
+	public boolean enterRoom(String room) throws IOException, ParseException {
 		// Resumen: SND(ENTER_ROOM <room>) && RCV(IN_ROOM) || RCV(REJECT)
 		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_ENTER, room);
 		String strmsg = msg.toEncodedString();
@@ -122,7 +127,7 @@ public class NCConnector {
 	//TODO Es necesario implementar métodos para recibir y enviar mensajes de chat a una sala
 	
 	//Método para pedir la descripción de una sala
-	public NCRoomDescription getRoomInfo(String room) throws IOException {
+	public NCRoomDescription getRoomInfo(String room) throws IOException, ParseException {
 		//Funcionamiento resumido: SND(GET_ROOMINFO) and RCV(ROOMINFO)
 		//// Construimos el mensaje de solicitud de información de la sala específica
 		NCImmediateMessage msg = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_INFO);
@@ -140,7 +145,7 @@ public class NCConnector {
 		this.dos.writeUTF(msg.toEncodedString());
 	}
 
-	public NCMessage rcvMsg() throws IOException {
+	public NCMessage rcvMsg() throws IOException, ParseException {
 		return NCMessage.readMessageFromSocket(this.dis);
 	}
 	

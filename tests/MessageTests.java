@@ -7,6 +7,7 @@ import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,8 @@ public class MessageTests {
     }
 
     @Test
-    void TestRooms() {
-        List<NCRoomDescription> rooms = new ArrayList<NCRoomDescription>();
+    void TestRooms() throws ParseException {
+        ArrayList<NCRoomDescription> rooms = new ArrayList<NCRoomDescription>();
         String rname = "Tesla";
         List<String> users = new ArrayList<String>();
         users.add("ElonMusk");
@@ -53,14 +54,14 @@ public class MessageTests {
         List<String> users = new ArrayList<String>();
         users.add("ElonMusk");
         users.add("SteveJobs");
-        NCInfoMessage msg = (NCInfoMessage) NCMessage.makeInfoMessage(NCMessage.OP_INFO, "Panas", users);
+        NCInfoMessage msg = (NCInfoMessage) NCMessage.makeInfoMessage(NCMessage.OP_INFO, "Panas", users, 0);
         // Parseo
         String seriald = msg.toEncodedString();
         // read
-        NCMessage res = NCInfoMessage.readFromString(NCMessage.OP_INFO, seriald);
+        NCInfoMessage res = NCInfoMessage.readFromString(NCMessage.OP_INFO, seriald);
         // Comparar
         assertEquals(msg.getOpcode(), res.getOpcode());
-        assertEquals(((NCInfoMessage) msg).getUsers(), ((NCInfoMessage) res).getUsers());
+        assertEquals(msg.getUsers(), res.getUsers());
     }
 
     @Test

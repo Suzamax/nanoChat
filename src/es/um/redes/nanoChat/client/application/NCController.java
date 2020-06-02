@@ -2,6 +2,8 @@ package es.um.redes.nanoChat.client.application;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -73,7 +75,7 @@ public class NCController {
 	}
 
 	//Procesa los comandos introducidos por un usuario que aún no está dentro de una sala
-	public void processCommand() throws IOException {
+	public void processCommand() throws IOException, ParseException {
 		switch (currentCommand) {
 		case NCCommands.COM_NICK:
 			if (clientStatus == PRE_REGISTRATION)
@@ -124,21 +126,17 @@ public class NCController {
 	}
 
 	//Método que solicita al servidor de NanoChat la lista de salas e imprime el resultado obtenido
-	private void getAndShowRooms() throws IOException {
+	private void getAndShowRooms() throws IOException, ParseException {
 		//// Lista que contendrá las descripciones de las salas existentes
 		//// Le pedimos al conector que obtenga la lista de salas ncConnector.getRooms()
-		List<NCRoomDescription> rooms = ncConnector.getRooms();
+		ArrayList<NCRoomDescription> rooms = ncConnector.getRooms();
 		//// Una vez recibidas iteramos sobre la lista para imprimir información de cada sala
-		for (NCRoomDescription room : rooms) {
-			System.out.println("Room: " + room.roomName);
-			System.out.println("Members:");
-			for (String m : room.members) System.out.println("\t" + m);
-			System.out.println("Last message: " + room.timeLastMessage);
-		}
+		for (NCRoomDescription room : rooms)
+			System.out.println(room.toPrintableString());
 	}
 
 	//Método para tramitar la solicitud de acceso del usuario a una sala concreta
-	private void enterChat() throws IOException {
+	private void enterChat() throws IOException, ParseException {
 		//// Se solicita al servidor la entrada en la sala correspondiente ncConnector.enterRoom()
 		//// Si la respuesta es un rechazo entonces informamos al usuario y salimos
 		if (!ncConnector.enterRoom(this.room)) System.out.println("Can't enter " + this.room +" \uD83D\uDE02\uD83D\uDC4C");
@@ -158,7 +156,7 @@ public class NCController {
 	}
 
 	//Método para procesar los comandos específicos de una sala
-	private void processRoomCommand() throws IOException {
+	private void processRoomCommand() throws IOException, ParseException {
 		switch (currentCommand) {
 		case NCCommands.COM_ROOMINFO:
 			//El usuario ha solicitado información sobre la sala y llamamos al método que la obtendrá
@@ -179,7 +177,7 @@ public class NCController {
 	}
 
 	//Método para solicitar al servidor la información sobre una sala y para mostrarla por pantalla
-	private void getAndShowInfo() throws IOException {
+	private void getAndShowInfo() throws IOException, ParseException {
 		//// Pedimos al servidor información sobre la sala en concreto
 		NCRoomDescription info_raw = this.ncConnector.getRoomInfo(this.room);
 		//// Mostramos por pantalla la información
@@ -206,7 +204,7 @@ public class NCController {
 	}
 
 	//Método para procesar los mensajes recibidos del servidor mientras que el shell estaba esperando un comando de usuario
-	private void processIncomingMessage() throws IOException {
+	private void processIncomingMessage() throws IOException, ParseException {
 		//// Recibir el mensaje
 		NCMessage msg = this.ncConnector.rcvMsg();
 		//// En función del tipo de mensaje, actuar en consecuencia

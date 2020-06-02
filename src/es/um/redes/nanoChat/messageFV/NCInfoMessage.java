@@ -1,9 +1,8 @@
 package es.um.redes.nanoChat.messageFV;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class NCInfoMessage extends NCMessage {
 
@@ -11,9 +10,9 @@ public class NCInfoMessage extends NCMessage {
     private String room;
     private long time;
 
-    static protected final String NAME_FIELD = "info";
-    static protected final String USER_FIELD = "users";
-    static protected final String TIME_FIELD = "lastmsg";
+    static protected final String NAME_FIELD = "room name";
+    static protected final String USER_FIELD = "members";
+    static protected final String TIME_FIELD = "last message";
 
     public NCInfoMessage(byte type, String room, List<String> users, long time) {
         this.opcode = type;
@@ -53,28 +52,34 @@ public class NCInfoMessage extends NCMessage {
     public static NCInfoMessage readFromString(byte code, String message) {
         String[] lines = message.split(String.valueOf(END_LINE));
         List<String> users = new ArrayList<>();
-        String room = "";
+        String roomName = "";
+        String[] u_raw;
         long time = 0;
-        int idx = lines[1].indexOf(DELIMITER);
-        String field_room = lines[1].substring(0, idx).toLowerCase();
-        String value_room = lines[1].substring(idx + 1).trim();
-        idx = lines[2].indexOf(DELIMITER);
-        String field_users = lines[2].substring(0, idx).toLowerCase();
-        String[] value_users_raw = lines[2].substring(idx + 1).trim().split(String.valueOf(','));
-        idx = lines[2].indexOf(DELIMITER);
-        String field_time = lines[3].substring(0, idx).toLowerCase();
-        Long value_time = Long.parseLong(lines[2].substring(idx+1).trim());
-        List<String> value_users = new ArrayList<String>();
-        Collections.addAll(value_users, value_users_raw);
-        if (field_room.equalsIgnoreCase(NAME_FIELD)
-                && field_users.equalsIgnoreCase(USER_FIELD)
-                && field_time.equalsIgnoreCase(TIME_FIELD)) {
-            room = value_room;
-            users = value_users;
-            time = value_time;
+        int idx;
+        String f, v;
+
+        for (String line : lines) {
+            idx = line.indexOf(DELIMITER);
+            f = line.substring(0, idx).toLowerCase().trim();
+            v = line.substring(idx + 1).trim();
+
+            if (f.equalsIgnoreCase(NAME_FIELD))
+                roomName = v;
+            if (f.equalsIgnoreCase(USER_FIELD)) {
+                u_raw = v.split(",");
+                if (u_raw.length > 0) Collections.addAll(users, u_raw);
+            }
+            if (f.equalsIgnoreCase(TIME_FIELD))
+                if (!v.contains("not yet")) {
+                    try {
+                        time = new SimpleDateFormat("MM/dd/yyyy - H:mm:ss", Locale.ENGLISH).parse(v).getTime();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
         }
 
-        return new NCInfoMessage(code, room, users, time);
+        return new NCInfoMessage(code, roomName, users, time);
     }
 
     /**
