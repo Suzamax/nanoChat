@@ -59,7 +59,7 @@ public class NCRoomDescription {
 			if (f.equalsIgnoreCase("room name"))
 				roomName = v;
 			if (f.contains("members")) {
-				users = v.split(USER_DELIMITER);
+				users = v.trim().split(USER_DELIMITER);
 				if (users.length > 0) Collections.addAll(members, users);
 			}
 			if (f.equalsIgnoreCase("last message"))

@@ -11,9 +11,9 @@ public class NCRoomListMessage extends NCMessage {
 
     private final ArrayList<NCRoomDescription> rooms;
 
-    static public final String NAME_FIELD = "room";
-    static public final String USER_FIELD = "users";
-    static public final String LAST_MSG = "lastmsg";
+    static public final String NAME_FIELD = "room name";
+    static public final String USER_FIELD = "members";
+    static public final String LAST_MSG = "last message";
 
     public NCRoomListMessage(byte type, ArrayList<NCRoomDescription> rooms) {
         this.opcode = type;

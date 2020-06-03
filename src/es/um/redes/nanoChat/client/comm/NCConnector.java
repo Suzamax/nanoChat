@@ -106,7 +106,7 @@ public class NCConnector {
 		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_ENTER, room);
 		String strmsg = msg.toEncodedString();
 		dos.writeUTF(strmsg);
-		NCRoomMessage res = (NCRoomMessage) NCMessage.readMessageFromSocket(dis);
+		NCImmediateMessage res = (NCImmediateMessage) NCMessage.readMessageFromSocket(dis);
 		return (res != null ? res.getOpcode() : 0) == NCMessage.OP_IN_ROOM;
 	}
 	

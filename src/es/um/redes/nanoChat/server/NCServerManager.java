@@ -66,7 +66,8 @@ class NCServerManager {
 		if (!this.rooms.containsKey(room)) {
 			rooms.put(room, new NCRoom()); // Se crea sala, nada de errores
 		}
-		if (rooms.get(room).registerUser(u, s)) return rooms.get(room);
+		if (this.rooms.containsKey(room))
+			return rooms.get(room);
 		//// Decidimos qué hacer si la sala no existe (devolver error O crear la sala)
 		//// Si la sala existe y si es aceptado en la sala entonces devolvemos el RoomManager de la sala
 		return null; // Banned lol 😂👌

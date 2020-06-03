@@ -58,18 +58,15 @@ public class NCServerThread extends Thread {
 				//// 2) Si se nos pide entrar en la sala entonces obtenemos el RoomManager de la sala,
 					case NCMessage.OP_ENTER:
 						if (message instanceof NCRoomMessage) {
-							String room = ((NCRoomMessage) message).getMsg();
-							this.roomManager = serverManager.enterRoom(this.user, room, this.socket);
+							currentRoom = ((NCRoomMessage) message).getMsg();
+							this.roomManager = serverManager.enterRoom(this.user, currentRoom, this.socket);
 						}
 				//// 2) notificamos al usuario que ha sido aceptado y procesamos mensajes con processRoomMessages()
-						if (this.roomManager != null) {
+						if (this.roomManager != null && roomManager.registerUser(this.user, this.socket)) {
 							NCImmediateMessage ok =
 									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_IN_ROOM);
-							this.dos.writeUTF(ok.toEncodedString());
-							NCRoomMessage joins =
-									(NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_JOIN, this.user);
-							this.dos.writeUTF(joins.toEncodedString());
-							processRoomMessages();
+							String okraw = ok.toEncodedString();
+							this.dos.writeUTF(okraw);
 						}
 				//// 2) Si el usuario no es aceptado en la sala entonces se le notifica al cliente
 						else {

@@ -29,8 +29,8 @@ public class DirectoryConnector {
 	private static final byte OPCODE_NOK	   = 6;
 
 
-	private DatagramSocket socket; // socket UDP
-	private InetSocketAddress directoryAddress; // dirección del servidor de directorio
+	private final DatagramSocket socket; // socket UDP
+	private final InetSocketAddress directoryAddress; // dirección del servidor de directorio
 
 	public DirectoryConnector(String agentAddress) throws IOException {
 		// // A partir de la dirección y del puerto generar la dirección de conexión para el Socket
@@ -38,31 +38,6 @@ public class DirectoryConnector {
 		// // Crear el socket UDP
 		this.socket = new DatagramSocket(); // No hace falta engancharle el SocketAddr
 	}
-
-	/*// Borrar esto cuando se pueda
-	public void mandaCadena(String str) throws IOException {
-		// Ejemplo chenchillo
-		byte[] buf = str.getBytes();
-		DatagramPacket pkt = new DatagramPacket(buf, buf.length, directoryAddress);
-		byte[] buf2 = new byte[PACKET_MAX_SIZE];
-		DatagramPacket pkt2 = new DatagramPacket(buf2, buf2.length);
-		boolean running = true;
-		while (running) {
-			try {
-				socket.send(pkt);
-				socket.setSoTimeout(1000);
-				socket.receive(pkt2);
-				running = false;
-			} catch (SocketTimeoutException e) {
-				System.out.println("Timed out...");
-			}
-		}
-
-		String cadena = new String(pkt2.getData(), 0, pkt2.getLength());
-		System.out.println("Enviado: " + str + "\nRecibido: " + cadena);
-		socket.close();
-	}
-	*/
 
 	/**
 	 * Envía una solicitud para obtener el servidor de chat asociado a un determinado protocolo

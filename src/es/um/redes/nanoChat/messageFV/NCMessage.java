@@ -137,6 +137,7 @@ public abstract class NCMessage {
 				case OP_GET_ROOMS:
 				case OP_EXIT:
 				case OP_NICK_OK:
+				case OP_IN_ROOM:
 				case OP_NICK_DUP:
 					return NCImmediateMessage.readFromString(code);
 				case OP_ROOMLIST:
