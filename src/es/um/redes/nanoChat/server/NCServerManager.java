@@ -66,11 +66,11 @@ class NCServerManager {
 		if (!this.rooms.containsKey(room)) {
 			rooms.put(room, new NCRoom()); // Se crea sala, nada de errores
 		}
-		if (this.rooms.containsKey(room))
-			return rooms.get(room);
+		rooms.get(room).registerUser(u, s);
+		return rooms.get(room);
 		//// Decidimos qué hacer si la sala no existe (devolver error O crear la sala)
 		//// Si la sala existe y si es aceptado en la sala entonces devolvemos el RoomManager de la sala
-		return null; // No se puede entrar...
+		//return null; // No se puede entrar...
 	}
 
 	//Un usuario deja la sala en la que estaba

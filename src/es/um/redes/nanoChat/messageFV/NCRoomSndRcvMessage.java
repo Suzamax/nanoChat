@@ -37,19 +37,19 @@ public class NCRoomSndRcvMessage extends NCMessage {
     }
 
     //Parseamos el mensaje contenido en message con el fin de obtener los distintos campos
-    public static NCRoomSndRcvMessage readFromString(byte code, String usr, String message) {
+    public static NCRoomSndRcvMessage readFromString(byte code, String message) {
         String msg = "";
         String u = "";
-        int idx_u = usr.indexOf(DELIMITER); // Posición del delimitador
-        int idx_m = message.indexOf(DELIMITER); // Posición del delimitador
-        String field_user = usr.substring(0, idx_u).toLowerCase();                                                                                                                                                // minúsculas
-        String value_user = usr.substring(idx_u + 1).trim();
-        String field_msg = message.substring(0, idx_m).toLowerCase();                                                                                                                                                // minúsculas
-        String value_msg = message.substring(idx_m + 1).trim();
-        if (field_msg.equalsIgnoreCase(MSG_FIELD)
-            && field_user.equalsIgnoreCase(USER_FIELD)) {
-            u = value_user;
-            msg = value_msg;
+        String[] lines = message.split(System.getProperty("line.separator"));
+
+        int idx;
+        String f, v;
+        for (String l : lines) {
+            idx = l.indexOf(DELIMITER); // Posición del delimitador
+            f   = l.substring(0, idx).toLowerCase();
+            v   = l.substring(idx + 1).trim();
+            if (f.equalsIgnoreCase(USER_FIELD)) u = v;
+            if (f.equalsIgnoreCase(MSG_FIELD)) msg = v;
         }
 
         return new NCRoomSndRcvMessage(code, u, msg);

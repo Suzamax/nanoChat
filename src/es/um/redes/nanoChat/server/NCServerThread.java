@@ -59,7 +59,7 @@ public class NCServerThread extends Thread {
 							this.roomManager = serverManager.enterRoom(this.user, currentRoom, this.socket);
 						}
 				//// 2) notificamos al usuario que ha sido aceptado y procesamos mensajes con processRoomMessages()
-						if (this.roomManager != null && roomManager.registerUser(this.user, this.socket)) {
+						if (this.roomManager != null) {
 							NCImmediateMessage ok =
 									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_IN_ROOM);
 							String okraw = ok.toEncodedString();
@@ -131,33 +131,37 @@ public class NCServerThread extends Thread {
 	}
 
 	private void processRoomMessages() throws IOException {
-		//TODO Comprobamos los mensajes que llegan hasta que el usuario decida salir de la sala
+		//// Comprobamos los mensajes que llegan hasta que el usuario decida salir de la sala
 		boolean exit = false;
+		//// Se recibe el mensaje enviado por el usuario
+		NCMessage msg;
 		while (!exit) {
-			//TODO Se recibe el mensaje enviado por el usuario
-			NCMessage msg;
 			try {
 				msg = NCMessage.readMessageFromSocket(this.dis);
 				switch (msg.getOpcode()) {
 					case NCMessage.OP_SEND:
-						System.out.println("A message was sent to " + this.currentRoom);
-						NCRoomSndRcvMessage send = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_MSG,
-								((NCRoomSndRcvMessage) msg).getUser(),
-								((NCRoomSndRcvMessage) msg).getMsg());
-						String send_raw = send.toEncodedString();
-						this.dos.writeUTF(send_raw);
+						// Se broadcastea (?), el formato es NCRoomSndRcvMessage
+						// (SndRcv básicamente es un formato para enviar y recibir)
+						this.roomManager.broadcastMessage(((NCRoomSndRcvMessage) msg).getUser(), ((NCRoomSndRcvMessage) msg).getMsg());
+						// easy gg
 						break;
 					case NCMessage.OP_INFO:
 						System.out.println("INFORMACIÓN");
+						// TODO COISAS
 						break;
+					case NCMessage.OP_EXIT: // Para salir de la sala
+						exit = true;
+						serverManager.leaveRoom(this.user, this.currentRoom);
+						break;
+					// TODO Mensajes Privados
+					// case NCMessage.OP_SEND_PRIV: // Privados
 				}
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
 
-
 		}
-
+		System.out.println("An user has exited!");
 	}
 }

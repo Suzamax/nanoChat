@@ -134,7 +134,7 @@ public abstract class NCMessage {
 					return NCRoomMessage.readFromString(code, message);
 				case OP_MSG:
 				case OP_SEND:
-					return NCRoomSndRcvMessage.readFromString(code, lines[1], lines[2]);
+					return NCRoomSndRcvMessage.readFromString(code, message);
 				case OP_GET_ROOMS:
 				case OP_EXIT:
 				case OP_NICK_OK:
