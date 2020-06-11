@@ -16,7 +16,7 @@ public class NCRoomMessage extends NCMessage {
 	private String msg;
 	
 	//Campo específico de este tipo de mensaje
-	static protected final String NAME_FIELD = "name";
+	static protected final String NAME_FIELD = "msg";
 
 	/**
 	 * Creamos un mensaje de tipo Room a partir del código de operación y del nombre

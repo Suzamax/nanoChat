@@ -129,9 +129,12 @@ public abstract class NCMessage {
 			byte code = operationToOpcode(value);
 			switch (code) {
 				case OP_NICK:
-				case OP_SEND:
 				case OP_ENTER:
+				case OP_GET_INFO:
 					return NCRoomMessage.readFromString(code, message);
+				case OP_MSG:
+				case OP_SEND:
+					return NCRoomSndRcvMessage.readFromString(code, lines[1], lines[2]);
 				case OP_GET_ROOMS:
 				case OP_EXIT:
 				case OP_NICK_OK:
@@ -141,7 +144,7 @@ public abstract class NCMessage {
 				case OP_ROOM_LIST:
 					return NCRoomListMessage.readFromString(code, message);
 				case OP_INFO:
-					return NCInfoMessage.readFromString(code, message);
+					return NCRoomInfoMessage.readFromString(code, message);
 				case OP_INVALID_CODE:
 				default:
 					System.err.println("Unknown or invalid message type received:" + code);
@@ -164,12 +167,16 @@ public abstract class NCMessage {
 
 	// Método para construir un mensaje de tipo Info a partir del opcode, la sala dada y los usuarios en ello
 	public static NCMessage makeInfoMessage(byte code, String room, List<String> users, long time) {
-		return new NCInfoMessage(code, room, users, time);
+		return new NCRoomInfoMessage(code, room, users, time);
 	}
 
 	// Método para construir un mensaje inmediato con el opcode de salida, confirmación
 	// o denegación de nick, u obtención de salas
 	public static NCMessage makeImmediateMessage(byte code) {
 		return new NCImmediateMessage(code);
+	}
+
+	public static NCMessage makeMessage(byte code, String user, String msg) {
+		return new NCRoomSndRcvMessage(code, user, msg);
 	}
 }

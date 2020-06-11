@@ -6,10 +6,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.ParseException;
 
-import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
-import es.um.redes.nanoChat.messageFV.NCMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomMessage;
+import es.um.redes.nanoChat.messageFV.*;
+import es.um.redes.nanoChat.server.roomManager.NCRoom;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
 /**
@@ -66,6 +64,7 @@ public class NCServerThread extends Thread {
 									(NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_IN_ROOM);
 							String okraw = ok.toEncodedString();
 							this.dos.writeUTF(okraw);
+							processRoomMessages();
 						}
 				//// 2) Si el usuario no es aceptado en la sala entonces se le notifica al cliente
 						else {
@@ -136,14 +135,29 @@ public class NCServerThread extends Thread {
 		boolean exit = false;
 		while (!exit) {
 			//TODO Se recibe el mensaje enviado por el usuario
-			String[] new_msgs_raw = this.dis.readUTF().split(String.valueOf(NCMessage.END_LINE));
-			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
-			int idx = new_msgs_raw[0].indexOf(NCMessage.DELIMITER); // Separador entre indicador de op y el nº de op
-			int op = Integer.getInteger(new_msgs_raw[0].substring(idx+1).trim()); // Obtenemos op
-			switch (op) {
-				case NCMessage.OP_MSG:
-
+			NCMessage msg;
+			try {
+				msg = NCMessage.readMessageFromSocket(this.dis);
+				switch (msg.getOpcode()) {
+					case NCMessage.OP_SEND:
+						System.out.println("A message was sent to " + this.currentRoom);
+						NCRoomSndRcvMessage send = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_MSG,
+								((NCRoomSndRcvMessage) msg).getUser(),
+								((NCRoomSndRcvMessage) msg).getMsg());
+						String send_raw = send.toEncodedString();
+						this.dos.writeUTF(send_raw);
+						break;
+					case NCMessage.OP_INFO:
+						System.out.println("INFORMACIÓN");
+						break;
+				}
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
+			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
+
+
 		}
+
 	}
 }

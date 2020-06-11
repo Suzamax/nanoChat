@@ -2,7 +2,10 @@ package es.um.redes.nanoChat.server.roomManager;
 
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomMessage;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
@@ -32,7 +35,7 @@ public class NCRoom extends NCRoomManager {
     public void broadcastMessage(String u, String message) throws IOException {
         // todo: para cada socket, enviar un mensaje
         for (Socket s : userMap.values()) {
-
+            sendMessage(s, message);
         }
         this.lastMsg = new Date().getTime();
 
@@ -57,5 +60,11 @@ public class NCRoom extends NCRoomManager {
     @Override
     public int usersInRoom() {
         return this.userMap.size(); // Obviamente
+    }
+
+    private void sendMessage(Socket s, String msg) throws IOException {
+        NCRoomMessage builtMsg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_MSG, msg);
+        String rawBuiltMsg = builtMsg.toEncodedString();
+        new DataOutputStream(s.getOutputStream()).writeUTF(rawBuiltMsg);
     }
 }

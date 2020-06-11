@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import es.um.redes.nanoChat.messageFV.*;
 import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
+import es.um.redes.nanoChat.server.roomManager.NCRoom;
 
 //Esta clase proporciona la funcionalidad necesaria para intercambiar mensajes entre el cliente y el servidor de NanoChat
 public class NCConnector {
@@ -101,21 +102,22 @@ public class NCConnector {
 	public NCRoomInfoMessage getRoomInfo(String room) throws IOException, ParseException {
 		//Funcionamiento resumido: SND(GET_ROOMINFO) and RCV(ROOMINFO)
 		//// Construimos el mensaje de solicitud de información de la sala específica
-		NCImmediateMessage msg = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_INFO);
+		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_GET_INFO, room);
 		this.dos.writeUTF(msg.toEncodedString());
 		//// Recibimos el mensaje de respuesta
-		NCInfoMessage res = (NCInfoMessage) NCMessage.readMessageFromSocket(dis);
+		NCRoomInfoMessage res = (NCRoomInfoMessage) NCMessage.readMessageFromSocket(dis);
 		//// Devolvemos la descripción contenida en el mensaje
-		NCRoomInfoMessage rd = new NCRoomInfoMessage(NCMessage.OP_GET_INFO, res.getRoom(), res.getUsers(), res.getTime());
+		NCRoomInfoMessage rd = new NCRoomInfoMessage(NCMessage.OP_INFO, res.getRoom(), res.getUsers(), res.getTime());
 		return null;
 	}
 
 	// Método para enviar mensajes en una sala
-	public void sendMsg(String m) throws IOException {
-		NCRoomMessage msg = (NCRoomMessage) NCMessage.makeRoomMessage(NCMessage.OP_SEND, m);
+	public void sendMsg(String u, String m) throws IOException {
+		NCRoomSndRcvMessage msg = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_SEND, u, m);
 		this.dos.writeUTF(msg.toEncodedString());
 	}
 
+	// Igual pero para recibir
 	public NCMessage rcvMsg() throws IOException, ParseException {
 		return NCMessage.readMessageFromSocket(this.dis);
 	}

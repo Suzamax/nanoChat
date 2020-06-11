@@ -1,6 +1,6 @@
 package es.um.redes.nanoChat.messageFV;
 
-public class NCRoomRcvMessage extends NCMessage {
+public class NCRoomSndRcvMessage extends NCMessage {
 
     private String user;
     private String msg;
@@ -9,10 +9,11 @@ public class NCRoomRcvMessage extends NCMessage {
     static protected final String USER_FIELD = "user";
     static protected final String MSG_FIELD = "msg";
 
+    static protected final String UM_DELIM = ";";
     /**
      * Creamos un mensaje de tipo Room a partir del código de operación y del nombre
      */
-    public NCRoomRcvMessage(byte type, String user, String msg) {
+    public NCRoomSndRcvMessage(byte type, String user, String msg) {
         this.opcode = type;
         this.user = user;
         this.msg = msg;
@@ -36,22 +37,22 @@ public class NCRoomRcvMessage extends NCMessage {
     }
 
     //Parseamos el mensaje contenido en message con el fin de obtener los distintos campos
-    public static NCRoomRcvMessage readFromString(byte code, String message) {
-        String[] lines = message.split(String.valueOf(END_LINE));
+    public static NCRoomSndRcvMessage readFromString(byte code, String usr, String message) {
         String msg = "";
-        String user = "";
-        int idx = lines[1].indexOf(DELIMITER); // Posición del delimitador
-        String field_user = lines[1].substring(0, idx).toLowerCase();                                                                                                                                                // minúsculas
-        String value_user = lines[1].substring(idx + 1).trim();
-        String field_msg = lines[1].substring(0, idx).toLowerCase();                                                                                                                                                // minúsculas
-        String value_msg = lines[1].substring(idx + 1).trim();
+        String u = "";
+        int idx_u = usr.indexOf(DELIMITER); // Posición del delimitador
+        int idx_m = message.indexOf(DELIMITER); // Posición del delimitador
+        String field_user = usr.substring(0, idx_u).toLowerCase();                                                                                                                                                // minúsculas
+        String value_user = usr.substring(idx_u + 1).trim();
+        String field_msg = message.substring(0, idx_m).toLowerCase();                                                                                                                                                // minúsculas
+        String value_msg = message.substring(idx_m + 1).trim();
         if (field_msg.equalsIgnoreCase(MSG_FIELD)
             && field_user.equalsIgnoreCase(USER_FIELD)) {
-            user = value_user;
+            u = value_user;
             msg = value_msg;
         }
 
-        return new NCRoomRcvMessage(code, user, msg);
+        return new NCRoomSndRcvMessage(code, u, msg);
     }
 
     public String getMsg() {

@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+
+// 1
 public class NCRoomInfoMessage extends NCMessage {
 	//Campos de los que, al menos, se compone una descripción de una sala
 	public String roomName;
@@ -69,5 +71,23 @@ public class NCRoomInfoMessage extends NCMessage {
 					timeLastMessage = new SimpleDateFormat("MM/dd/yyyy - H:mm:ss", Locale.ENGLISH).parse(v).getTime();
 		}
 		return new NCRoomInfoMessage(code, roomName, members, timeLastMessage);
+	}
+
+	/**
+	 * @return the room
+	 */
+	public String getRoom() {
+		return roomName;
+	}
+
+	/**
+	 * @return the users
+	 */
+	public List<String> getUsers() {
+		return members;
+	}
+
+	public long getTime() {
+		return timeLastMessage;
 	}
 }

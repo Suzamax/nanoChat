@@ -1,6 +1,5 @@
 package es.um.redes.nanoChat.messageFV;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -11,11 +10,11 @@ public class NCRoomListMessage extends NCMessage {
 
     static public final String NAME_FIELD = "room name";
     static public final String USER_FIELD = "members";
-    static public final String LAST_MSG = "last message";
+    static public final String LAST_MSG   = "last message";
 
     public NCRoomListMessage(byte type, ArrayList<NCRoomInfoMessage> rooms) {
         this.opcode = type;
-        this.rooms = new ArrayList<NCRoomInfoMessage>(rooms);
+        this.rooms = new ArrayList<>(rooms);
     }
 
     @Override
@@ -43,13 +42,13 @@ public class NCRoomListMessage extends NCMessage {
         return sb.toString();
     }
 
-    public static NCRoomListMessage readFromString(byte code, String message) throws ParseException {
+    public static NCRoomListMessage readFromString(byte code, String message) {
         ArrayList<String> users = new ArrayList<>();
 
         String[] lines = message.split(System.getProperty("line.separator"));
         String[] user_raw;
         ArrayList<NCRoomInfoMessage> ds = new ArrayList<>();
-        int idx; //= lines[1].indexOf(DELIMITER);
+        int idx;
         String f, v, room = "";
         long time = 0;
 
@@ -62,8 +61,10 @@ public class NCRoomListMessage extends NCMessage {
                     room = v;
                     break;
                 case USER_FIELD:
-                    user_raw = v.trim().split(String.valueOf(','));
-                    Collections.addAll(users, user_raw);
+                    if (!v.isEmpty()) { // Para no devolver un fantasma
+                        user_raw = v.trim().split(String.valueOf(','));
+                        Collections.addAll(users, user_raw);
+                    }
                     break;
                 case LAST_MSG:
                     time = Long.parseLong(v);

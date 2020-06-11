@@ -1,5 +1,4 @@
 import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
-import es.um.redes.nanoChat.messageFV.NCInfoMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
@@ -51,15 +50,15 @@ public class MessageTests {
     }
 
     @Test
-    void TestRoomInfo() {
+    void TestRoomInfo() throws ParseException {
         List<String> users = new ArrayList<String>();
         users.add("ElonMusk");
         users.add("SteveJobs");
-        NCInfoMessage msg = (NCInfoMessage) NCMessage.makeInfoMessage(NCMessage.OP_INFO, "Panas", users, 0);
+        NCRoomInfoMessage msg = (NCRoomInfoMessage) NCMessage.makeInfoMessage(NCMessage.OP_INFO, "Panas", users, 0);
         // Parseo
         String seriald = msg.toEncodedString();
         // read
-        NCInfoMessage res = NCInfoMessage.readFromString(NCMessage.OP_INFO, seriald);
+        NCRoomInfoMessage res = NCRoomInfoMessage.readFromString(NCMessage.OP_INFO, seriald);
         // Comparar
         assertEquals(msg.getOpcode(), res.getOpcode());
         assertEquals(msg.getUsers(), res.getUsers());

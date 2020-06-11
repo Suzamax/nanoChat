@@ -12,7 +12,7 @@ import es.um.redes.nanoChat.client.shell.NCShell;
 import es.um.redes.nanoChat.directory.connector.DirectoryConnector;
 import es.um.redes.nanoChat.messageFV.NCBroadcastMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomRcvMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomSndRcvMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 
 public class NCController {
@@ -199,7 +199,7 @@ public class NCController {
 	//Método para enviar un mensaje al chat de la sala
 	private void sendChatMessage() throws IOException {
 		//// Mandamos al servidor un mensaje de chat
-		this.ncConnector.sendMsg(this.chatMessage);
+		this.ncConnector.sendMsg(this.nickname, this.chatMessage);
 	}
 
 	//Método para procesar los mensajes recibidos del servidor mientras que el shell estaba esperando un comando de usuario
@@ -211,7 +211,7 @@ public class NCController {
 		switch (code) {
 			// ? TODO (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la información de quién envía el mensaje y el mensaje en sí
 			case NCMessage.OP_MSG: // Usuario manda mensaje
-				System.out.println("<" + ((NCRoomRcvMessage) msg).getUser() + "> " + ((NCRoomRcvMessage) msg).getMsg());
+				System.out.println("<" + ((NCRoomSndRcvMessage) msg).getUser() + "> " + ((NCRoomSndRcvMessage) msg).getMsg());
 				break;
 			case NCMessage.OP_BROADCAST: // Servidor manda mensaje
 				System.out.println("* " + ((NCBroadcastMessage) msg).getUser() +

@@ -70,7 +70,7 @@ class NCServerManager {
 			return rooms.get(room);
 		//// Decidimos qué hacer si la sala no existe (devolver error O crear la sala)
 		//// Si la sala existe y si es aceptado en la sala entonces devolvemos el RoomManager de la sala
-		return null; // Banned lol 😂👌
+		return null; // No se puede entrar...
 	}
 
 	//Un usuario deja la sala en la que estaba
@@ -79,7 +79,7 @@ class NCServerManager {
 		if (this.rooms.containsKey(room)) {
 			rooms.get(room).removeUser(u);
 			if (rooms.get(room).usersInRoom() == 0) // Miramos si no hay usuarios
-				rooms.remove(room); // Negros ghanaeses bailando con un ataúd con la habitación
+				rooms.remove(room); // Ghana Pallbearers
 		}
 		//// Si la sala existe sacamos al usuario de la sala
 		//// Decidir qué hacer si la sala se queda vacía
