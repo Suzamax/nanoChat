@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.*;
 
 import es.um.redes.nanoChat.server.roomManager.NCRoom;
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
 /**
@@ -36,8 +36,8 @@ class NCServerManager {
 	}
 
 	//Devuelve la descripción de las salas existentes
-	public synchronized ArrayList<NCRoomDescription> getRoomList() {
-		ArrayList<NCRoomDescription> roomList = new ArrayList<>();
+	public synchronized ArrayList<NCRoomInfoMessage> getRoomList() {
+		ArrayList<NCRoomInfoMessage> roomList = new ArrayList<>();
 		//// Pregunta a cada RoomManager cuál es la descripción actual de su sala
 		//// Añade la información al ArrayList
 		for (NCRoomManager room : rooms.values()) roomList.add(room.getDescription());

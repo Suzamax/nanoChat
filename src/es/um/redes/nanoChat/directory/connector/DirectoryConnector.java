@@ -1,6 +1,8 @@
 package es.um.redes.nanoChat.directory.connector;
 
 
+import es.um.redes.nanoChat.directory.DirectoryOpCodes;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,14 +22,6 @@ public class DirectoryConnector {
 	private static final int DEFAULT_PORT = 6868;
 	//Valor del TIMEOUT
 	private static final int TIMEOUT = 1000;
-
-	private static final byte OPCODE_OK        = 1;
-	private static final byte OPCODE_NOSERVER  = 2;
-	private static final byte OPCODE_REGISTER  = 3;
-	private static final byte OPCODE_GETSERVER = 4;
-	private static final byte OPCODE_SERVERRES = 5;
-	private static final byte OPCODE_NOK	   = 6;
-
 
 	private final DatagramSocket socket; // socket UDP
 	private final InetSocketAddress directoryAddress; // dirección del servidor de directorio
@@ -77,7 +71,7 @@ public class DirectoryConnector {
 		// // Devolvemos el mensaje codificado en binario según el formato acordado
 		// OP (1) + PROTOCOLO (4) = 5 bytes
 		ByteBuffer bb = ByteBuffer.allocate(5);
-		bb.put(OPCODE_GETSERVER);
+		bb.put(DirectoryOpCodes.GETSERVER.getByteValue());
 		bb.putInt(protocol);
 		return bb.array();
 	}
@@ -88,13 +82,13 @@ public class DirectoryConnector {
 		ByteBuffer bb = ByteBuffer.wrap(packet.getData());
 		byte opcode = bb.get(); // 1er byte
 
-		if (opcode == OPCODE_SERVERRES) {
+		if (opcode == DirectoryOpCodes.SERVERRES.getByteValue()) {
 			byte[] ip_raw = new byte[4];
 			bb.get(ip_raw);
 			int puerto = bb.getInt();
 			InetAddress ip = InetAddress.getByAddress(ip_raw);
 			return new InetSocketAddress(ip, puerto);
-		} else if (opcode != OPCODE_NOSERVER) System.err.println("¡Recibido OpCode inesperado!" + opcode);
+		} else if (opcode != DirectoryOpCodes.NOSERVER.getByteValue()) System.err.println("¡Recibido OpCode inesperado!" + opcode);
 		//// Si la respuesta no está vacía, devolver la dirección (extraerla del mensaje)
 		return null;
 	}
@@ -106,11 +100,11 @@ public class DirectoryConnector {
 	public boolean registerServerForProtocol(int protocol, int port) throws IOException {
 
 		//// Construir solicitud de registro (buildRegistration)
-		byte[] booooooof = buildRegistration(protocol, port);
-		byte[] gettoboof = new byte[PACKET_MAX_SIZE];
-		DatagramPacket pktres = new DatagramPacket(gettoboof, gettoboof.length);
+		byte[] buf = buildRegistration(protocol, port);
+		byte[] getBuf = new byte[PACKET_MAX_SIZE];
+		DatagramPacket pktres = new DatagramPacket(getBuf, getBuf.length);
 		int reintentos = 5;
-		DatagramPacket pkt = new DatagramPacket(booooooof, booooooof.length, directoryAddress);
+		DatagramPacket pkt = new DatagramPacket(buf, buf.length, directoryAddress);
 		//// Enviar solicitud
 		//// Recibe respuesta
 		while (reintentos > 0) {
@@ -134,7 +128,7 @@ public class DirectoryConnector {
 	private byte[] buildRegistration(int protocol, int port) {
 		////????? Devolvemos el mensaje codificado en binario según el formato acordado
 		ByteBuffer bb = ByteBuffer.allocate(9);
-		bb.put(OPCODE_REGISTER); // 1
+		bb.put(DirectoryOpCodes.REGISTER.getByteValue()); // 1
 		bb.putInt(protocol); // 4
 		bb.putInt(port); // 4
 		return bb.array();

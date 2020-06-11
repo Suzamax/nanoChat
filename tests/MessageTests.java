@@ -3,7 +3,7 @@ import es.um.redes.nanoChat.messageFV.NCInfoMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,21 +28,22 @@ public class MessageTests {
 
     @Test
     void TestRooms() throws ParseException {
-        ArrayList<NCRoomDescription> rooms = new ArrayList<NCRoomDescription>();
+        ArrayList<NCRoomInfoMessage> rooms = new ArrayList<NCRoomInfoMessage>();
         String rname = "Tesla";
         List<String> users = new ArrayList<String>();
         users.add("ElonMusk");
         users.add("Grimes");
         users.add("XÆA12");
-        rooms.add(new NCRoomDescription(rname, users, 0));
-        NCRoomListMessage msg = (NCRoomListMessage) NCMessage.makeRoomListMessage(NCMessage.OP_ROOMLIST, rooms);
+        rooms.add(new NCRoomInfoMessage(NCMessage.OP_GET_INFO, rname, users, 0));
+        NCRoomListMessage msg = (NCRoomListMessage) NCMessage.makeRoomListMessage(NCMessage.OP_ROOM_LIST, rooms);
         // Parseo
         String seriald = msg.toEncodedString();
         // read
-        NCRoomListMessage res = NCRoomListMessage.readFromString(NCMessage.OP_ROOMLIST, seriald);
+        NCRoomListMessage res = NCRoomListMessage.readFromString(NCMessage.OP_ROOM_LIST, seriald);
         // Comparar
         assertEquals(msg.getOpcode(), res.getOpcode());
-        for (NCRoomDescription room : msg.getRooms()) {
+        for (NCRoomInfoMessage room : msg.getRooms()) {
+            assertEquals(room.getOpcode(), NCMessage.OP_GET_INFO);
             assertEquals(room.members, users);
             assertEquals(room.roomName, rname);
             assertEquals(room.timeLastMessage, 0);

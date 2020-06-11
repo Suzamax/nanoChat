@@ -1,7 +1,5 @@
 package es.um.redes.nanoChat.messageFV;
 
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -20,17 +18,17 @@ public abstract class NCMessage {
 	public static final byte OP_NICK_OK      = 2; // RCV
 	public static final byte OP_NICK_DUP     = 3; // RCV
 	public static final byte OP_GET_ROOMS    = 4; // SEND
-	public static final byte OP_ROOMLIST     = 5; // RCV
+	public static final byte OP_ROOM_LIST    = 5; // RCV
 	public static final byte OP_ENTER        = 6; // SEND
 	public static final byte OP_IN_ROOM      = 7; // RCV
 	public static final byte OP_NO_ROOM      = 8; // RCV
-	public static final byte OP_JOIN         = 9; // RCV
-	public static final byte OP_SEND         = 10; // SEND (msg)
-	public static final byte OP_MSG          = 11; // RCV (msg)
-	public static final byte OP_EXIT         = 12; // SEND
-	public static final byte OP_GONE		 = 13; // RCV
-	public static final byte OP_INFO         = 14; // RCV
-
+	public static final byte OP_SEND         = 9; // SEND (msg)
+	public static final byte OP_MSG          = 10; // RCV (msg)
+	public static final byte OP_EXIT         = 11; // SEND
+	public static final byte OP_GONE		 = 12; // RCV
+	public static final byte OP_INFO         = 13; // RCV
+	public static final byte OP_GET_INFO     = 14; // RCV
+	public static final byte OP_BROADCAST	 = 15; // Del srv al cliente
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -48,17 +46,17 @@ public abstract class NCMessage {
 		OP_NICK_OK,
 		OP_NICK_DUP,
 		OP_GET_ROOMS, //
-		OP_ROOMLIST, //
+		OP_ROOM_LIST, //
 		OP_ENTER, //
 		OP_IN_ROOM, //
 		OP_NO_ROOM,
-		OP_JOIN,
 		OP_SEND, //
 		OP_MSG,
 		OP_EXIT, //
 		OP_GONE,
 		OP_INFO, //
-
+		OP_GET_INFO,
+		OP_BROADCAST
 	};
 
 	/**
@@ -73,13 +71,13 @@ public abstract class NCMessage {
 		"Enter",
 		"In room",
 		"No room",
-		"Join",
 		"Send",
 		"Message",
 		"Exit",
 		"Gone",
 		"Info",
-
+		"Get Info",
+		"Broadcast",
 	};
 
 	private static final Map<String, Byte> _operation_to_opcode;
@@ -140,7 +138,7 @@ public abstract class NCMessage {
 				case OP_IN_ROOM:
 				case OP_NICK_DUP:
 					return NCImmediateMessage.readFromString(code);
-				case OP_ROOMLIST:
+				case OP_ROOM_LIST:
 					return NCRoomListMessage.readFromString(code, message);
 				case OP_INFO:
 					return NCInfoMessage.readFromString(code, message);
@@ -155,7 +153,7 @@ public abstract class NCMessage {
 
 
 	//Método para construir un mensaje de tipo RoomList a partir del opcode y del nombre
-	public static NCMessage makeRoomListMessage(byte code, ArrayList<NCRoomDescription> rooms) {
+	public static NCMessage makeRoomListMessage(byte code, ArrayList<NCRoomInfoMessage> rooms) {
 		return new NCRoomListMessage(code, rooms);
 	}
 

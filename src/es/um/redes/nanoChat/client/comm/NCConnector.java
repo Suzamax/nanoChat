@@ -8,12 +8,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 
 import es.um.redes.nanoChat.messageFV.*;
-import es.um.redes.nanoChat.server.roomManager.NCRoom;
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 
 //Esta clase proporciona la funcionalidad necesaria para intercambiar mensajes entre el cliente y el servidor de NanoChat
 public class NCConnector {
@@ -60,7 +58,7 @@ public class NCConnector {
 	}
 	
 	//Método para obtener la lista de salas del servidor
-	public ArrayList<NCRoomDescription> getRooms() throws IOException, ParseException {
+	public ArrayList<NCRoomInfoMessage> getRooms() throws IOException, ParseException {
 		//Funcionamiento resumido: SND(GET_ROOMS) and RCV(ROOM_LIST)
 		//// completar el método
 		NCImmediateMessage msg_get_rooms =
@@ -70,34 +68,7 @@ public class NCConnector {
 
 		NCRoomListMessage res = (NCRoomListMessage) NCMessage.readMessageFromSocket(dis);
 
-		return (res.getOpcode() == NCMessage.OP_ROOMLIST) ? res.getRooms() : null;
-		/*
-		String[] lines = res_raw.split(String.valueOf('\n'));
-		int idx;
-		String f, v, room = null;
-		List<String> users = new ArrayList<>();
-		long time = 0;
-		//// por cada sala obtener su NCRoomDescription
-		for (String l : lines) {
-			idx = l.indexOf(NCMessage.DELIMITER);
-			f = l.substring(0, idx);
-			v = l.substring(idx+1).trim();
-			switch (f) {
-				case NCRoomListMessage.NAME_FIELD:
-					room = v;
-					break;
-				case NCRoomListMessage.USER_FIELD:
-					String[] members = v.trim().split(String.valueOf(','));
-					Collections.addAll(users, members);
-					break;
-				case NCRoomListMessage.LAST_MSG:
-					time = Long.parseLong(v);
-					break;
-			}
-			list.add(new NCRoomDescription(room, users, time));
-		}
-		return list;
-		 */
+		return (Objects.requireNonNull(res).getOpcode() == NCMessage.OP_ROOM_LIST) ? res.getRooms() : null;
 	}
 	
 	//Método para solicitar la entrada en una sala
@@ -127,7 +98,7 @@ public class NCConnector {
 	//TODO Es necesario implementar métodos para recibir y enviar mensajes de chat a una sala
 	
 	//Método para pedir la descripción de una sala
-	public NCRoomDescription getRoomInfo(String room) throws IOException, ParseException {
+	public NCRoomInfoMessage getRoomInfo(String room) throws IOException, ParseException {
 		//Funcionamiento resumido: SND(GET_ROOMINFO) and RCV(ROOMINFO)
 		//// Construimos el mensaje de solicitud de información de la sala específica
 		NCImmediateMessage msg = (NCImmediateMessage) NCMessage.makeImmediateMessage(NCMessage.OP_INFO);
@@ -135,7 +106,7 @@ public class NCConnector {
 		//// Recibimos el mensaje de respuesta
 		NCInfoMessage res = (NCInfoMessage) NCMessage.readMessageFromSocket(dis);
 		//// Devolvemos la descripción contenida en el mensaje
-		NCRoomDescription rd = new NCRoomDescription(res.getRoom(), res.getUsers(), res.getTime());
+		NCRoomInfoMessage rd = new NCRoomInfoMessage(NCMessage.OP_GET_INFO, res.getRoom(), res.getUsers(), res.getTime());
 		return null;
 	}
 

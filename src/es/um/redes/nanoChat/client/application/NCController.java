@@ -5,16 +5,15 @@ import java.net.InetSocketAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import es.um.redes.nanoChat.client.comm.NCConnector;
 import es.um.redes.nanoChat.client.shell.NCCommands;
 import es.um.redes.nanoChat.client.shell.NCShell;
 import es.um.redes.nanoChat.directory.connector.DirectoryConnector;
+import es.um.redes.nanoChat.messageFV.NCBroadcastMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomRcvMessage;
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 
 public class NCController {
 	//Diferentes estados del cliente de acuerdo con el autómata
@@ -129,10 +128,10 @@ public class NCController {
 	private void getAndShowRooms() throws IOException, ParseException {
 		//// Lista que contendrá las descripciones de las salas existentes
 		//// Le pedimos al conector que obtenga la lista de salas ncConnector.getRooms()
-		ArrayList<NCRoomDescription> rooms = ncConnector.getRooms();
+		ArrayList<NCRoomInfoMessage> rooms = ncConnector.getRooms();
 		//// Una vez recibidas iteramos sobre la lista para imprimir información de cada sala
-		for (NCRoomDescription room : rooms)
-			System.out.println(room.toPrintableString());
+		for (NCRoomInfoMessage room : rooms)
+			System.out.println(room.toEncodedString());
 	}
 
 	//Método para tramitar la solicitud de acceso del usuario a una sala concreta
@@ -179,7 +178,7 @@ public class NCController {
 	//Método para solicitar al servidor la información sobre una sala y para mostrarla por pantalla
 	private void getAndShowInfo() throws IOException, ParseException {
 		//// Pedimos al servidor información sobre la sala en concreto
-		NCRoomDescription info_raw = this.ncConnector.getRoomInfo(this.room);
+		NCRoomInfoMessage info_raw = this.ncConnector.getRoomInfo(this.room);
 		//// Mostramos por pantalla la información
 		System.out.println("Room: " + info_raw.roomName);
 		System.out.println("Members: ");
@@ -211,19 +210,17 @@ public class NCController {
 		byte code = msg.getOpcode();
 		switch (code) {
 			// ? TODO (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la información de quién envía el mensaje y el mensaje en sí
-			case NCMessage.OP_MSG:
+			case NCMessage.OP_MSG: // Usuario manda mensaje
 				System.out.println("<" + ((NCRoomRcvMessage) msg).getUser() + "> " + ((NCRoomRcvMessage) msg).getMsg());
 				break;
-			case NCMessage.OP_GONE:
-				System.out.println("* " + ((NCRoomMessage) msg).getMsg() + " left.");
+			case NCMessage.OP_BROADCAST: // Servidor manda mensaje
+				System.out.println("* " + ((NCBroadcastMessage) msg).getUser() +
+						(((NCBroadcastMessage) msg).isJoinOrLeave() ? " joins." : "left."));
 				break;
-			case NCMessage.OP_JOIN:
-				System.out.println("* " + ((NCRoomMessage) msg).getMsg() + " joins.");
-
 		}
 	}
 
-	//MNétodo para leer un comando de la sala 
+	//Método para leer un comando de la sala
 	public void readRoomCommandFromShell() {
 		//Pedimos un nuevo comando de sala al shell (pasando el conector por si nos llega un mensaje entrante)
 		shell.readChatCommand(ncConnector);

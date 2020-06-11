@@ -1,5 +1,8 @@
 package es.um.redes.nanoChat.server.roomManager;
 
+import es.um.redes.nanoChat.messageFV.NCMessage;
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
@@ -28,7 +31,9 @@ public class NCRoom extends NCRoomManager {
     @Override
     public void broadcastMessage(String u, String message) throws IOException {
         // todo: para cada socket, enviar un mensaje
-        for (Socket s : userMap.values()) ;
+        for (Socket s : userMap.values()) {
+
+        }
         this.lastMsg = new Date().getTime();
 
     }
@@ -44,9 +49,9 @@ public class NCRoom extends NCRoomManager {
     }
 
     @Override
-    public NCRoomDescription getDescription() {
+    public NCRoomInfoMessage getDescription() {
         List<String> users = new ArrayList<>(this.userMap.keySet());
-        return new NCRoomDescription(this.roomName, users, this.lastMsg);
+        return new NCRoomInfoMessage(NCMessage.OP_INFO, this.roomName, users, this.lastMsg);
     }
 
     @Override

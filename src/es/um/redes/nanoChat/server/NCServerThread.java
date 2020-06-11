@@ -10,7 +10,6 @@ import es.um.redes.nanoChat.messageFV.NCImmediateMessage;
 import es.um.redes.nanoChat.messageFV.NCMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomListMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomMessage;
-import es.um.redes.nanoChat.server.roomManager.NCRoomDescription;
 import es.um.redes.nanoChat.server.roomManager.NCRoomManager;
 
 /**
@@ -126,7 +125,7 @@ public class NCServerThread extends Thread {
 		//// La lista de salas debe obtenerse a partir del RoomManager y después enviarse mediante su mensaje correspondiente
 		NCRoomListMessage rl =
 				(NCRoomListMessage) NCMessage
-						.makeRoomListMessage(NCMessage.OP_ROOMLIST, serverManager.getRoomList());
+						.makeRoomListMessage(NCMessage.OP_ROOM_LIST, serverManager.getRoomList());
 		String encodedRL = rl.toEncodedString();
 		// Enviar un serverManager.getRoomList()
 		this.dos.writeUTF(encodedRL);

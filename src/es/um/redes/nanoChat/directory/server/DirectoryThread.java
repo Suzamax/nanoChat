@@ -1,11 +1,11 @@
 package es.um.redes.nanoChat.directory.server;
 
-import javax.xml.crypto.Data;
+import es.um.redes.nanoChat.directory.DirectoryOpCodes;
+
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-
 
 public class DirectoryThread extends Thread {
 
@@ -18,13 +18,6 @@ public class DirectoryThread extends Thread {
 	protected DatagramSocket socket = null;
 	//Probabilidad de descarte del mensaje
 	protected double messageDiscardProbability;
-
-	private static final byte OPCODE_OK        = 1;
-	private static final byte OPCODE_NOSERVER  = 2;
-	private static final byte OPCODE_REGISTER  = 3;
-	private static final byte OPCODE_GETSERVER = 4;
-	private static final byte OPCODE_SERVERRES = 5;
-	private static final byte OPCODE_NOK	   = 6;
 
 	public DirectoryThread(String name, int directoryPort, double corruptionProbability) throws SocketException {
 		super(name);
@@ -77,22 +70,21 @@ public class DirectoryThread extends Thread {
 		//// 1) Extraemos el tipo de mensaje recibido
 		ByteBuffer bb = ByteBuffer.wrap(data);
 		byte opcode = bb.get();
-		switch (opcode) {
-			case OPCODE_REGISTER:
-				int protocolo = bb.getInt();
-				int puerto = bb.getInt();
-				servers.put(protocolo, new InetSocketAddress(clientAddr.getAddress(), puerto));
-				sendOK(clientAddr);
-				break;
-			case OPCODE_GETSERVER:
-				int proto = bb.getInt();
-				if (servers.containsKey(proto))
-					sendServerInfo(servers.get(proto), clientAddr);
-				else sendEmpty(clientAddr);
-				break;
+		// He quitado el Switch para poder usar el enum :-)
+		if (opcode == DirectoryOpCodes.REGISTER.getByteValue()) {
+			int protocolo = bb.getInt();
+			int puerto = bb.getInt();
+			servers.put(protocolo, new InetSocketAddress(clientAddr.getAddress(), puerto));
+			sendOK(clientAddr);
 		}
-		////! 2) Procesar el caso de que sea un registro y enviar mediante sendOK
-		////????? 3) Procesar el caso de que sea una consulta
+		if (opcode == DirectoryOpCodes.GETSERVER.getByteValue()) {
+			int proto = bb.getInt();
+			if (servers.containsKey(proto))
+				sendServerInfo(servers.get(proto), clientAddr);
+			else sendEmpty(clientAddr);
+		}
+		//// 2) Procesar el caso de que sea un registro y enviar mediante sendOK
+		//// 3) Procesar el caso de que sea una consulta
 		//// 3.1) Devolver una dirección si existe un servidor (sendServerInfo)
 		//// 3.2) Devolver una notificación si no existe un servidor (sendEmpty)
 	}
@@ -101,7 +93,8 @@ public class DirectoryThread extends Thread {
 	private void sendEmpty(InetSocketAddress clientAddr) throws IOException {
 		//// Construir respuesta
 		byte[] buf = new byte[1];
-		buf[0] = OPCODE_NOSERVER;
+		//buf[0] = OPCODE_NOSERVER;
+		buf[0] = DirectoryOpCodes.NOSERVER.getByteValue();
 		//// Enviar respuesta
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, clientAddr);
 		socket.send(pkt);
@@ -115,7 +108,8 @@ public class DirectoryThread extends Thread {
 		//// Construir respuesta
 		ByteBuffer bb = ByteBuffer.allocate(9);
 		// OP + IP + PORT = 1 + 4 + 4 = 9
-		bb.put(OPCODE_SERVERRES);
+		//bb.put(OPCODE_SERVERRES);
+		bb.put(DirectoryOpCodes.SERVERRES.getByteValue());
 		bb.put(ip_raw);
 		bb.putInt(puerto);
 		//// Enviar respuesta
@@ -127,7 +121,7 @@ public class DirectoryThread extends Thread {
 	private void sendOK(InetSocketAddress clientAddr) throws IOException {
 		//// Construir respuesta
 		byte[] buf = new byte[1];
-		buf[0] = OPCODE_OK;
+		buf[0] = DirectoryOpCodes.OK.getByteValue();
 		//// Enviar respuesta
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, clientAddr);
 		socket.send(pkt);

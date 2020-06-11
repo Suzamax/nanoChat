@@ -1,5 +1,7 @@
 package es.um.redes.nanoChat.server.roomManager;
 
+import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
+
 import java.io.IOException;
 import java.net.Socket;
 
@@ -15,7 +17,7 @@ public abstract class NCRoomManager {
 	//Método para nombrar una sala
 	public abstract void setRoomName(String roomName);
 	//Método para devolver la descripción del estado actual de la sala
-	public abstract NCRoomDescription getDescription();
+	public abstract NCRoomInfoMessage getDescription();
 
 	//Método para devolver el número de usuarios conectados a una sala
 	public abstract int usersInRoom();
