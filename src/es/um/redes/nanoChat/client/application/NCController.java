@@ -16,6 +16,13 @@ import es.um.redes.nanoChat.messageFV.NCRoomSndRcvMessage;
 import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
 
 public class NCController {
+
+	// Como molo, imprimo los mensajes en colorines :-)
+	public static final String ANSI_BLUE = "\u001B[34m"; // Privados
+	public static final String ANSI_GREEN = "\u001B[32m"; // Servidor
+	public static final String ANSI_RESET = "\u001B[0m";
+
+
 	//Diferentes estados del cliente de acuerdo con el autómata
 	private static final byte PRE_CONNECTION = 1;
 	private static final byte PRE_REGISTRATION = 2;
@@ -26,7 +33,7 @@ public class NCController {
 	//Conector para enviar y recibir mensajes con el servidor de NanoChat
 	private NCConnector ncConnector;
 	//Shell para leer comandos de usuario de la entrada estándar
-	private NCShell shell;
+	private final NCShell shell;
 	//Último comando proporcionado por el usuario
 	private byte currentCommand;
 	//Nick del usuario
@@ -39,6 +46,9 @@ public class NCController {
 	private InetSocketAddress serverAddress;
 	//Estado actual del cliente, de acuerdo con el autómata
 	private byte clientStatus = PRE_CONNECTION;
+
+	// El usuario con el que se habla en privado
+	private String receiver;
 
 	//Constructor
 	public NCController() {
@@ -68,6 +78,10 @@ public class NCController {
 			break;
 		case NCCommands.COM_SEND:
 			chatMessage = args[0];
+			break;
+		case NCCommands.COM_PRIV:
+			receiver = args[0];
+			chatMessage = args[1];
 			break;
 		default:
 		}
@@ -165,6 +179,10 @@ public class NCController {
 			//El usuario quiere enviar un mensaje al chat de la sala
 			sendChatMessage();
 			break;
+		case NCCommands.COM_PRIV:
+			// El usuario quiere enviar un mensaje a un usuario de la sala
+			sendPrivateMessage();
+			break;
 		case NCCommands.COM_SOCKET_IN:
 			//En este caso lo que ha sucedido es que hemos recibido un mensaje desde la sala y hay que procesarlo
 			processIncomingMessage();
@@ -202,6 +220,12 @@ public class NCController {
 		this.ncConnector.sendMsg(this.nickname, this.chatMessage);
 	}
 
+	//Método para enviar un mensaje a un usuario de la sala
+	private void sendPrivateMessage() throws IOException {
+		//// Mandamos al servidor un mensaje de chat
+		this.ncConnector.sendPriv(this.nickname, this.receiver, this.chatMessage);
+	}
+
 	//Método para procesar los mensajes recibidos del servidor mientras que el shell estaba esperando un comando de usuario
 	private void processIncomingMessage() throws IOException, ParseException {
 		//// Recibir el mensaje
@@ -209,13 +233,24 @@ public class NCController {
 		//// En función del tipo de mensaje, actuar en consecuencia
 		byte code = msg.getOpcode();
 		switch (code) {
-			// ? TODO (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la información de quién envía el mensaje y el mensaje en sí
+			// ? TODO (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la
+			//  información de quién envía el mensaje y el mensaje en sí
 			case NCMessage.OP_MSG: // Usuario manda mensaje
-				System.out.println("<" + ((NCRoomSndRcvMessage) msg).getUser() + "> " + ((NCRoomSndRcvMessage) msg).getMsg());
+				if (((NCRoomSndRcvMessage) msg).isPriv())
+				System.out.println(ANSI_BLUE
+						+ "[" + ((NCRoomSndRcvMessage) msg).getUser()
+						+ "] " + ((NCRoomSndRcvMessage) msg).getMsg()
+						+ ANSI_RESET);
+				else
+				System.out.println("<"
+						+ ((NCRoomSndRcvMessage) msg).getUser()
+						+ "> " + ((NCRoomSndRcvMessage) msg).getMsg());
 				break;
 			case NCMessage.OP_BROADCAST: // Servidor manda mensaje
-				System.out.println("* " + ((NCBroadcastMessage) msg).getUser() +
-						(((NCBroadcastMessage) msg).isJoinOrLeave() ? " joins." : "left."));
+				System.out.print(ANSI_GREEN + "* " + ((NCBroadcastMessage) msg).getUser());
+				if (((NCBroadcastMessage) msg).isJoinOrLeave())
+					System.out.println(" joins the room." + ANSI_RESET);
+				else System.out.println(" left." + ANSI_RESET);
 				break;
 		}
 	}

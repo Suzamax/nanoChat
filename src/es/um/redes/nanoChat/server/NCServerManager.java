@@ -1,5 +1,6 @@
 package es.um.redes.nanoChat.server;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
 
@@ -61,25 +62,26 @@ class NCServerManager {
 	}
 
 	//Un usuario solicita acceso para entrar a una sala y registrar su conexión en ella
-	public synchronized NCRoomManager enterRoom(String u, String room, Socket s) {
+	public synchronized NCRoomManager enterRoom(String u, String room, Socket s) throws IOException {
 		//// Verificamos si la sala existe
 		if (!this.rooms.containsKey(room)) {
 			rooms.put(room, new NCRoom()); // Se crea sala, nada de errores
 		}
-		rooms.get(room).registerUser(u, s);
-		return rooms.get(room);
+		if (rooms.get(room).registerUser(u, s))
+			return rooms.get(room);
+		else return null;
 		//// Decidimos qué hacer si la sala no existe (devolver error O crear la sala)
 		//// Si la sala existe y si es aceptado en la sala entonces devolvemos el RoomManager de la sala
 		//return null; // No se puede entrar...
 	}
 
 	//Un usuario deja la sala en la que estaba
-	public synchronized void leaveRoom(String u, String room) {
+	public synchronized void leaveRoom(String u, String room) throws IOException {
 		//// Verificamos si la sala existe
 		if (this.rooms.containsKey(room)) {
 			rooms.get(room).removeUser(u);
-			if (rooms.get(room).usersInRoom() == 0) // Miramos si no hay usuarios
-				rooms.remove(room); // Ghana Pallbearers
+			if (rooms.get(room).usersInRoom() == 0 && rooms.size() > 1) // Miramos si no hay usuarios
+				rooms.remove(room); // Ghana Pallbearers if that
 		}
 		//// Si la sala existe sacamos al usuario de la sala
 		//// Decidir qué hacer si la sala se queda vacía

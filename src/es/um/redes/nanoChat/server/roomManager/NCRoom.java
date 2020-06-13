@@ -1,9 +1,6 @@
 package es.um.redes.nanoChat.server.roomManager;
 
-import es.um.redes.nanoChat.messageFV.NCMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomInfoMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomMessage;
-import es.um.redes.nanoChat.messageFV.NCRoomSndRcvMessage;
+import es.um.redes.nanoChat.messageFV.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,10 +20,13 @@ public class NCRoom extends NCRoomManager {
     }
 
     @Override
-    public boolean registerUser(String u, Socket s) {
+    public boolean registerUser(String u, Socket s) throws IOException {
         if (this.userMap.containsKey(u))
             return false;
         else {
+            for (Socket so : userMap.values())
+                if (!so.equals(s))
+                    sendSrvMessage(so, u, true);
             this.userMap.put(u, s);
             return true;
         }
@@ -35,16 +35,17 @@ public class NCRoom extends NCRoomManager {
     @Override
     public void broadcastMessage(String u, String message) throws IOException {
         // todo: para cada socket, enviar un mensaje
-        for (Socket s : userMap.values()) {
-            sendMessage(s, u, message);
-        }
+        for (Socket s : userMap.values())
+            sendMessage(s, u, message, false);
         this.lastMsg = new Date().getTime();
-
     }
 
+
     @Override
-    public void removeUser(String u) {
+    public void removeUser(String u) throws IOException {
         this.userMap.remove(u);
+        for (Socket so : userMap.values())
+            sendSrvMessage(so, u, false);
     }
 
     @Override
@@ -63,8 +64,18 @@ public class NCRoom extends NCRoomManager {
         return this.userMap.size(); // Obviamente
     }
 
-    private void sendMessage(Socket s, String u, String msg) throws IOException {
-        NCRoomSndRcvMessage builtMsg = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_MSG, u, msg);
+    public void sendMessage(Socket s, String u, String msg, boolean priv) throws IOException {
+        NCRoomSndRcvMessage builtMsg = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_MSG, u, msg, priv);
+        String rawBuiltMsg = builtMsg.toEncodedString();
+        new DataOutputStream(s.getOutputStream()).writeUTF(rawBuiltMsg);
+    }
+
+    public Socket getUserSocket(String u) {
+        return this.userMap.get(u);
+    }
+
+    public void sendSrvMessage(Socket s, String u, boolean jol) throws IOException {
+        NCBroadcastMessage builtMsg = (NCBroadcastMessage) NCMessage.makeBroadcastMessage(NCMessage.OP_BROADCAST, u, jol);
         String rawBuiltMsg = builtMsg.toEncodedString();
         new DataOutputStream(s.getOutputStream()).writeUTF(rawBuiltMsg);
     }

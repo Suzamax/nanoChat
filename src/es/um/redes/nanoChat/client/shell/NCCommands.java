@@ -12,7 +12,8 @@ public class NCCommands {
 	public static final byte COM_ENTER = 2;
 	public static final byte COM_NICK = 3;
 	public static final byte COM_SEND = 4;
-	public static final byte COM_EXIT = 5;
+	public static final byte COM_PRIV = 5;
+	public static final byte COM_EXIT = 6;
 	public static final byte COM_ROOMINFO = 7;
 	public static final byte COM_QUIT = 8;
 	public static final byte COM_HELP = 9;
@@ -29,6 +30,7 @@ public class NCCommands {
 		COM_ENTER,
 		COM_NICK,
 		COM_SEND,
+		COM_PRIV,
 		COM_EXIT, 
 		COM_ROOMINFO,
 		COM_QUIT,
@@ -43,6 +45,7 @@ public class NCCommands {
 		"enter",
 		"nick",
 		"send",
+		"private",
 		"exit",
 		"info",
 		"quit",
@@ -56,6 +59,7 @@ public class NCCommands {
 		"enter a particular <room>",
 		"to set the <nickname> in the server",
 		"to send a <message> in the chat",
+		"to send a <message> to the <user>",
 		"to leave the current room", 
 		"shows the information of the room",
 		"to quit the application",

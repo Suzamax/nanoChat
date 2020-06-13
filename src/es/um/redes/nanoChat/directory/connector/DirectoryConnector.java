@@ -22,6 +22,7 @@ public class DirectoryConnector {
 	private static final int DEFAULT_PORT = 6868;
 	//Valor del TIMEOUT
 	private static final int TIMEOUT = 1000;
+	private static final int MAX_REINTENTOS = 10;
 
 	private final DatagramSocket socket; // socket UDP
 	private final InetSocketAddress directoryAddress; // dirección del servidor de directorio
@@ -44,12 +45,13 @@ public class DirectoryConnector {
 		//// Construir el datagrama con la consulta
 		DatagramPacket pkt = new DatagramPacket(consulta, consulta.length, directoryAddress);
 		//// Enviar datagrama por el socket
-		int reintentos = 5;
+		int reintentos = MAX_REINTENTOS;
 		//// preparar el buffer para la respuesta
 		byte[] buf = new byte[PACKET_MAX_SIZE];
 		//// Recibir la respuesta
 		DatagramPacket pktres = new DatagramPacket(buf, buf.length);
 		while (reintentos > 0) {
+			System.out.println("Trying to connect...");
 			socket.send(pkt);
 			//// Establecer el temporizador para el caso en que no haya respuesta
 			socket.setSoTimeout(TIMEOUT);
@@ -103,11 +105,12 @@ public class DirectoryConnector {
 		byte[] buf = buildRegistration(protocol, port);
 		byte[] getBuf = new byte[PACKET_MAX_SIZE];
 		DatagramPacket pktres = new DatagramPacket(getBuf, getBuf.length);
-		int reintentos = 5;
+		int reintentos = MAX_REINTENTOS;
 		DatagramPacket pkt = new DatagramPacket(buf, buf.length, directoryAddress);
 		//// Enviar solicitud
 		//// Recibe respuesta
 		while (reintentos > 0) {
+			System.out.println("Trying to connect...");
 			socket.send(pkt);
 			socket.setSoTimeout(TIMEOUT);
 			try {

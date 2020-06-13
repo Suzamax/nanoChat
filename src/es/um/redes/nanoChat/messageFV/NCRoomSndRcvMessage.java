@@ -3,19 +3,33 @@ package es.um.redes.nanoChat.messageFV;
 public class NCRoomSndRcvMessage extends NCMessage {
 
     private String user;
+    private String rcvr;
+    private boolean priv;
     private String msg;
 
     //Campo específico de este tipo de mensaje
     static protected final String USER_FIELD = "user";
     static protected final String MSG_FIELD = "msg";
+    static protected final String DST_FIELD = "receiver";
+    static protected final String PRIV_FIELD = "private";
 
-    static protected final String UM_DELIM = ";";
     /**
      * Creamos un mensaje de tipo Room a partir del código de operación y del nombre
      */
-    public NCRoomSndRcvMessage(byte type, String user, String msg) {
+    public NCRoomSndRcvMessage(byte type, String user, String msg, boolean priv) {
         this.opcode = type;
         this.user = user;
+        this.msg = msg;
+        this.priv = priv;
+        this.rcvr = null;
+    }
+
+    // Si hay tres string es que es mensaje privado
+    public NCRoomSndRcvMessage(byte type, String user, String dst, String msg, boolean priv) {
+        this.opcode = type;
+        this.user = user;
+        this.rcvr = dst;
+        this.priv = priv; // Siempre true lmao
         this.msg = msg;
     }
 
@@ -26,6 +40,15 @@ public class NCRoomSndRcvMessage extends NCMessage {
         sb.append(OPCODE_FIELD + DELIMITER)
             .append(opcodeToOperation(this.opcode))
             .append(END_LINE); //Construimos el campo
+        if (this.priv) {
+            if (this.rcvr != null)
+                sb.append(DST_FIELD + DELIMITER)
+                        .append(this.rcvr)
+                        .append(END_LINE);
+            else sb.append(PRIV_FIELD + DELIMITER)
+                        .append("true")
+                        .append(END_LINE);
+        }
         sb.append(USER_FIELD + DELIMITER)
             .append(this.user)
             .append(END_LINE);
@@ -40,6 +63,8 @@ public class NCRoomSndRcvMessage extends NCMessage {
     public static NCRoomSndRcvMessage readFromString(byte code, String message) {
         String msg = "";
         String u = "";
+        String rcv = null;
+        boolean prv = false;
         String[] lines = message.split(System.getProperty("line.separator"));
 
         int idx;
@@ -49,10 +74,12 @@ public class NCRoomSndRcvMessage extends NCMessage {
             f   = l.substring(0, idx).toLowerCase();
             v   = l.substring(idx + 1).trim();
             if (f.equalsIgnoreCase(USER_FIELD)) u = v;
+            if (f.equalsIgnoreCase(PRIV_FIELD)) prv = true;
+            if (f.equalsIgnoreCase(DST_FIELD)) rcv = v;
             if (f.equalsIgnoreCase(MSG_FIELD)) msg = v;
         }
-
-        return new NCRoomSndRcvMessage(code, u, msg);
+        if (rcv != null) return new NCRoomSndRcvMessage(code, u, rcv, msg, true);
+        return new NCRoomSndRcvMessage(code, u, msg, prv);
     }
 
     public String getMsg() {
@@ -61,5 +88,13 @@ public class NCRoomSndRcvMessage extends NCMessage {
 
     public String getUser() {
         return user;
+    }
+
+    public String getRcvr() {
+        return rcvr;
+    }
+
+    public boolean isPriv() {
+        return priv;
     }
 }

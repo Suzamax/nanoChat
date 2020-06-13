@@ -78,7 +78,11 @@ public class NCServerThread extends Thread {
 		} catch (Exception e) {
 			//If an error occurs with the communications the user is removed from all the managers and the connection is closed
 			System.out.println("* User " + user + " disconnected.");
-			serverManager.leaveRoom(user, currentRoom);
+			try {
+				serverManager.leaveRoom(user, currentRoom);
+			} catch (IOException ioException) {
+				ioException.printStackTrace();
+			}
 			serverManager.removeUser(user);
 		}
 		finally {
@@ -134,6 +138,9 @@ public class NCServerThread extends Thread {
 		//// Comprobamos los mensajes que llegan hasta que el usuario decida salir de la sala
 		boolean exit = false;
 		//// Se recibe el mensaje enviado por el usuario
+		NCBroadcastMessage join = (NCBroadcastMessage) NCMessage.makeBroadcastMessage(NCMessage.OP_BROADCAST, this.user,
+				true);
+		this.dos.writeUTF(join.toEncodedString());
 		NCMessage msg;
 		while (!exit) {
 			try {
@@ -145,16 +152,24 @@ public class NCServerThread extends Thread {
 						this.roomManager.broadcastMessage(((NCRoomSndRcvMessage) msg).getUser(), ((NCRoomSndRcvMessage) msg).getMsg());
 						// easy gg
 						break;
+					case NCMessage.OP_BROADCAST:
+						// TODO coisas
+						break;
 					case NCMessage.OP_INFO:
 						System.out.println("INFORMACIÓN");
-						// TODO COISAS
+						// TODO cosas
 						break;
 					case NCMessage.OP_EXIT: // Para salir de la sala
 						exit = true;
 						serverManager.leaveRoom(this.user, this.currentRoom);
 						break;
-					// TODO Mensajes Privados
-					// case NCMessage.OP_SEND_PRIV: // Privados
+					case NCMessage.OP_SEND_PRIV: // Privados
+						String sendTo = ((NCRoomSndRcvMessage) msg).getRcvr();
+						((NCRoom) this.roomManager).sendMessage(((NCRoom) this.roomManager).getUserSocket(sendTo),
+												((NCRoomSndRcvMessage) msg).getUser(),
+												((NCRoomSndRcvMessage) msg).getMsg(),
+											true);
+						break;
 				}
 			} catch (ParseException e) {
 				e.printStackTrace();

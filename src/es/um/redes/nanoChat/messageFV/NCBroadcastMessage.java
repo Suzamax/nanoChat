@@ -1,13 +1,15 @@
 package es.um.redes.nanoChat.messageFV;
 
-import java.util.Date;
-
 public class NCBroadcastMessage extends NCMessage {
 
     private final boolean joinOrLeave;
     private final String user;
 
-    static public final String JOINS = "joins";
+    static public final String USER_FIELD = "user";
+    static public final String ACTION_FIELD = "action";
+    static public final String JOINS_VALUE = "joined";
+    static public final String LEAVES_VALUE = "left";
+
 
     private static final String STATUS_DELIMITER = ";";
 
@@ -21,28 +23,39 @@ public class NCBroadcastMessage extends NCMessage {
     @Override
     public String toEncodedString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Broadcast: ")
-                .append(user);
-
-        if (this.joinOrLeave)
-            sb.append(" joins.");
-        else
-            sb.append(" left.");
-        sb.append(END_LINE).append(END_LINE);
-        return sb.toString();
+        sb.append(OPCODE_FIELD + DELIMITER)
+                .append(opcodeToOperation(this.opcode))
+                .append(END_LINE); //Construimos el campo
+        sb.append(USER_FIELD + DELIMITER)
+                .append(this.user)
+                .append(END_LINE);
+        sb.append(ACTION_FIELD + DELIMITER);
+        if (joinOrLeave) sb.append(JOINS_VALUE);
+        else sb.append(LEAVES_VALUE);
+        sb.append(END_LINE);
+        sb.append(END_LINE);  //Marcamos el final del mensaje
+        return sb.toString(); //Se obtiene el mensaje
     }
 
-    public static NCBroadcastMessage readFromString(byte code, String str) {
-        int idx = str.indexOf(DELIMITER);
-        boolean joins = false;
-        String f = str.substring(0, idx).toLowerCase().trim();
-        String v = str.substring(idx + 1);
-        idx = v.indexOf(STATUS_DELIMITER);
-        String u = v.substring(0, idx).trim();
-        String status = v.substring(idx + 1).trim();
-        if (status.equalsIgnoreCase(JOINS)) joins = true;
+    public static NCBroadcastMessage readFromString(byte code, String message) {
+        String msg = "";
+        String u = "";
+        boolean jol = false;
+        String[] lines = message.split(System.getProperty("line.separator"));
 
-        return new NCBroadcastMessage(code, u, joins);
+        int idx;
+        String f, v;
+        for (String l : lines) {
+            idx = l.indexOf(DELIMITER); // Posición del delimitador
+            f   = l.substring(0, idx).toLowerCase();
+            v   = l.substring(idx + 1).trim();
+            if (f.equalsIgnoreCase(USER_FIELD)) u = v;
+            if (f.equalsIgnoreCase(ACTION_FIELD) && v.equalsIgnoreCase(JOINS_VALUE)) {
+                jol = true;
+            }
+        }
+
+        return new NCBroadcastMessage(code, u, jol);
     }
 
     public String getUser() {

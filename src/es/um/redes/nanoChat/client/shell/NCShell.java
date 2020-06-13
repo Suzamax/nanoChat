@@ -137,25 +137,31 @@ public class NCShell {
 			if (!st.hasMoreTokens())
 				continue;
 			command = NCCommands.stringToCommand(st.nextToken());
+			StringBuilder message = new StringBuilder();
 			switch (command) {
-			case NCCommands.COM_INVALID:
-				System.out.println("Invalid command ("+input+")");
-				continue;
-			case NCCommands.COM_HELP:
-				NCCommands.printCommandsHelp();
-				continue;
-			case NCCommands.COM_ROOMINFO:
-				break;
-			case NCCommands.COM_EXIT:
-				break;
-			case NCCommands.COM_SEND:
-				StringBuffer message = new StringBuffer();
-				while (st.hasMoreTokens())
-					message.append(st.nextToken()+" ");
-				vargs.add(message.toString());
-				break;
-			default:
-				System.out.println("That command is only valid if you are not in a room");;
+				case NCCommands.COM_INVALID:
+					System.out.println("Invalid command ("+input+")");
+					continue;
+				case NCCommands.COM_HELP:
+					NCCommands.printCommandsHelp();
+					continue;
+				case NCCommands.COM_ROOMINFO:
+					break;
+				case NCCommands.COM_EXIT:
+					break;
+				case NCCommands.COM_SEND:
+					while (st.hasMoreTokens())
+						message.append(st.nextToken() + " ");
+					vargs.add(message.toString());
+					break;
+				case NCCommands.COM_PRIV:
+					String user = st.nextToken();
+					while (st.hasMoreTokens()) message.append(st.nextToken() + " ");
+					vargs.add(user);
+					vargs.add(message.toString());
+					break;
+				default:
+					System.out.println("That command is only valid if you are not in a room");;
 			}
 			break;
 		}

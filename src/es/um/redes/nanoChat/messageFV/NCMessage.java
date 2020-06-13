@@ -29,6 +29,8 @@ public abstract class NCMessage {
 	public static final byte OP_INFO         = 13; // RCV
 	public static final byte OP_GET_INFO     = 14; // RCV
 	public static final byte OP_BROADCAST	 = 15; // Del srv al cliente
+	public static final byte OP_SEND_PRIV	 = 16; // SND -> OP_MSG con campo priv = true
+
 
 	//Constantes con los delimitadores de los mensajes de field:value
 	public static final char DELIMITER = ':';    //Define el delimitador
@@ -56,7 +58,8 @@ public abstract class NCMessage {
 		OP_GONE,
 		OP_INFO, //
 		OP_GET_INFO,
-		OP_BROADCAST
+		OP_BROADCAST,
+		OP_SEND_PRIV,
 	};
 
 	/**
@@ -78,6 +81,7 @@ public abstract class NCMessage {
 		"Info",
 		"Get Info",
 		"Broadcast",
+		"Send private",
 	};
 
 	private static final Map<String, Byte> _operation_to_opcode;
@@ -133,6 +137,7 @@ public abstract class NCMessage {
 				case OP_GET_INFO:
 					return NCRoomMessage.readFromString(code, message);
 				case OP_MSG:
+				case OP_SEND_PRIV:
 				case OP_SEND:
 					return NCRoomSndRcvMessage.readFromString(code, message);
 				case OP_GET_ROOMS:
@@ -145,6 +150,8 @@ public abstract class NCMessage {
 					return NCRoomListMessage.readFromString(code, message);
 				case OP_INFO:
 					return NCRoomInfoMessage.readFromString(code, message);
+				case OP_BROADCAST:
+					return NCBroadcastMessage.readFromString(code, message);
 				case OP_INVALID_CODE:
 				default:
 					System.err.println("Unknown or invalid message type received:" + code);
@@ -176,7 +183,16 @@ public abstract class NCMessage {
 		return new NCImmediateMessage(code);
 	}
 
-	public static NCMessage makeMessage(byte code, String user, String msg) {
-		return new NCRoomSndRcvMessage(code, user, msg);
+	public static NCMessage makeMessage(byte code, String user, String msg, boolean priv) {
+		return new NCRoomSndRcvMessage(code, user, msg, priv);
+	}
+
+	// Mensajes privados
+	public static NCMessage makePrivMessage(byte code, String user, String dst, String msg, boolean priv) {
+		return new NCRoomSndRcvMessage(code, user, dst, msg, priv);
+	}
+
+	public static NCMessage makeBroadcastMessage(byte code, String user, boolean jol) {
+		return new NCBroadcastMessage(code, user, jol);
 	}
 }

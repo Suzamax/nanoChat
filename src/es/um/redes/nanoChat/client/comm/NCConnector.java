@@ -113,11 +113,18 @@ public class NCConnector {
 
 	// Método para enviar mensajes en una sala
 	public void sendMsg(String u, String m) throws IOException {
-		NCRoomSndRcvMessage msg = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_SEND, u, m);
+		NCRoomSndRcvMessage msg = (NCRoomSndRcvMessage) NCMessage.makeMessage(NCMessage.OP_SEND, u, m, false);
 		this.dos.writeUTF(msg.toEncodedString());
 	}
 
-	// Igual pero para recibir
+
+	// Método para enviar mensajes a un usuario de la sala
+	public void sendPriv(String u, String d, String m) throws IOException {
+		NCRoomSndRcvMessage msg = (NCRoomSndRcvMessage) NCMessage.makePrivMessage(NCMessage.OP_SEND_PRIV, u, d, m, true);
+		this.dos.writeUTF(msg.toEncodedString());
+	}
+
+	// Igual pero para recibir ya sea público o privado
 	public NCMessage rcvMsg() throws IOException, ParseException {
 		return NCMessage.readMessageFromSocket(this.dis);
 	}
