@@ -13,8 +13,8 @@ public class NCRoom extends NCRoomManager {
     private long lastMsg;
 
 
-    public NCRoom() {
-        super();
+    public NCRoom(String name) {
+        this.roomName = name;
         this.userMap = new HashMap<String, Socket>();
         this.lastMsg = 0;
     }
@@ -34,7 +34,7 @@ public class NCRoom extends NCRoomManager {
 
     @Override
     public void broadcastMessage(String u, String message) throws IOException {
-        // todo: para cada socket, enviar un mensaje
+        //// para cada socket, enviar un mensaje
         for (Socket s : userMap.values())
             sendMessage(s, u, message, false);
         this.lastMsg = new Date().getTime();

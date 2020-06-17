@@ -38,7 +38,7 @@ public class NanoChatServer implements Runnable {
     	//Manager del servidor (compartido entre los Thread)
     	manager = new NCServerManager();
     	//// Registramos una sala de chat en el servidor (subclase de NCRoomManager)
-		manager.registerRoomManager(new NCRoom());
+		manager.registerRoomManager(new NCRoom("RoomA"));
 	}
 
 

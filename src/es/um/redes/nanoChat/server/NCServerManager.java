@@ -65,7 +65,7 @@ class NCServerManager {
 	public synchronized NCRoomManager enterRoom(String u, String room, Socket s) throws IOException {
 		//// Verificamos si la sala existe
 		if (!this.rooms.containsKey(room)) {
-			rooms.put(room, new NCRoom()); // Se crea sala, nada de errores
+			rooms.put(room, new NCRoom(room)); // Se crea sala, nada de errores
 		}
 		if (rooms.get(room).registerUser(u, s))
 			return rooms.get(room);

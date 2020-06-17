@@ -27,16 +27,21 @@ public class NCRoomInfoMessage extends NCMessage {
 		StringBuilder sb = new StringBuilder();
 		sb.append(OPCODE_FIELD + DELIMITER).append(opcodeToOperation(opcode)).append(END_LINE);
 		sb
-				.append("Room Name")
-				.append(DELIMITER)
-				.append(roomName)
-				.append(END_LINE);
+			.append("Room Name")
+			.append(DELIMITER)
+			.append(roomName)
+			.append(END_LINE);
 		sb
-				.append("Members (")
-				.append(members.size())
-				.append(")")
-				.append(DELIMITER);
-		for (String member : members) {
+			.append("Members (");
+		if (members == null)
+			sb.append("0");
+		else
+			sb
+				.append(members.size());
+		sb
+			.append(")")
+			.append(DELIMITER);
+		if (members != null) for (String member : members) {
 			sb.append(member)
 				.append(USER_DELIMITER);
 		}

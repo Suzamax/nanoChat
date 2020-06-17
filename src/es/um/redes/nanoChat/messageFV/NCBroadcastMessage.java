@@ -10,9 +10,6 @@ public class NCBroadcastMessage extends NCMessage {
     static public final String JOINS_VALUE = "joined";
     static public final String LEAVES_VALUE = "left";
 
-
-    private static final String STATUS_DELIMITER = ";";
-
     public NCBroadcastMessage(byte type, String user, boolean joinOrLeave) {
         this.opcode = type;
         this.user = user;

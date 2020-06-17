@@ -10,8 +10,11 @@ public class NCImmediateMessage extends NCMessage{
     public String toEncodedString() {
         StringBuffer sb = new StringBuffer();
 
-        sb.append(OPCODE_FIELD + DELIMITER + opcodeToOperation(opcode) + END_LINE);
-        sb.append(END_LINE);
+        sb
+            .append(OPCODE_FIELD + DELIMITER)
+            .append(opcodeToOperation(opcode))
+            .append(END_LINE)
+            .append(END_LINE);
 
         return sb.toString();
     }

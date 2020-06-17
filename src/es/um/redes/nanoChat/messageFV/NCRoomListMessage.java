@@ -2,6 +2,7 @@ package es.um.redes.nanoChat.messageFV;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.ListIterator;
 
 public class NCRoomListMessage extends NCMessage {
@@ -11,6 +12,8 @@ public class NCRoomListMessage extends NCMessage {
     static public final String NAME_FIELD = "room name";
     static public final String USER_FIELD = "members";
     static public final String LAST_MSG   = "last message";
+
+    static public final String ROOM_DELIM = ";";
 
     public NCRoomListMessage(byte type, ArrayList<NCRoomInfoMessage> rooms) {
         this.opcode = type;
@@ -22,9 +25,9 @@ public class NCRoomListMessage extends NCMessage {
         StringBuilder sb = new StringBuilder();
 
         sb.append(OPCODE_FIELD + DELIMITER).append(opcodeToOperation(opcode)).append(END_LINE);
-        sb.append(NAME_FIELD + DELIMITER);
 
         for (NCRoomInfoMessage current : rooms) {
+            sb.append(NAME_FIELD + DELIMITER);
             sb.append(current.roomName).append(END_LINE).append(USER_FIELD + DELIMITER);
             ListIterator<String> name = current.members.listIterator();
             while (name.hasNext()) {
@@ -43,11 +46,12 @@ public class NCRoomListMessage extends NCMessage {
     }
 
     public static NCRoomListMessage readFromString(byte code, String message) {
-        ArrayList<String> users = new ArrayList<>();
+        ArrayList<NCRoomInfoMessage> rooms = new ArrayList<>();
+        HashMap<String, ArrayList<String>> users = new HashMap<>();
+        ArrayList<String> users_aux;
 
         String[] lines = message.split(System.getProperty("line.separator"));
         String[] user_raw;
-        ArrayList<NCRoomInfoMessage> ds = new ArrayList<>();
         int idx;
         String f, v, room = "";
         long time = 0;
@@ -62,18 +66,21 @@ public class NCRoomListMessage extends NCMessage {
                     break;
                 case USER_FIELD:
                     if (!v.isEmpty()) { // Para no devolver un fantasma
+                        users_aux = new ArrayList<>();
                         user_raw = v.trim().split(String.valueOf(','));
-                        Collections.addAll(users, user_raw);
+                        Collections.addAll(users_aux, user_raw);
+                        users.put(room, users_aux);
                     }
                     break;
                 case LAST_MSG:
                     time = Long.parseLong(v);
+                    rooms.add(new NCRoomInfoMessage(NCMessage.OP_INFO, room, users.get(room), time));
                     break;
             }
+
         }
 
-        ds.add(new NCRoomInfoMessage(code, room, users, time));
-        return new NCRoomListMessage(code, ds);
+        return new NCRoomListMessage(code, rooms);
     }
 
     /**

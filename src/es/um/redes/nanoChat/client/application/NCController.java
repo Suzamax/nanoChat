@@ -152,7 +152,7 @@ public class NCController {
 	private void enterChat() throws IOException, ParseException {
 		//// Se solicita al servidor la entrada en la sala correspondiente ncConnector.enterRoom()
 		//// Si la respuesta es un rechazo entonces informamos al usuario y salimos
-		if (!ncConnector.enterRoom(this.room)) System.out.println("Can't enter " + this.room +" \uD83D\uDE02\uD83D\uDC4C");
+		if (!ncConnector.enterRoom(this.room)) System.out.println("Can't enter " + this.room);
 		//// En caso contrario informamos que estamos dentro y seguimos
 		else {
 			System.out.println("You have entered " + this.room + "!");
@@ -237,8 +237,8 @@ public class NCController {
 		//// En función del tipo de mensaje, actuar en consecuencia
 		byte code = msg.getOpcode();
 		switch (code) {
-			// ? TODO (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la
-			//  información de quién envía el mensaje y el mensaje en sí
+			//// (Ejemplo) En el caso de que fuera un mensaje de chat de broadcast mostramos la
+			////  información de quién envía el mensaje y el mensaje en sí
 			case NCMessage.OP_MSG: // Usuario manda mensaje
 				if (((NCRoomSndRcvMessage) msg).isPriv())
 				System.out.println(ANSI_BLUE

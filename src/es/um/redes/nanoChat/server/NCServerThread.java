@@ -171,7 +171,7 @@ public class NCServerThread extends Thread {
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-			//TODO Se analiza el código de operación del mensaje y se trata en consecuencia
+			//// Se analiza el código de operación del mensaje y se trata en consecuencia
 
 		}
 		System.out.println("An user has exited!");

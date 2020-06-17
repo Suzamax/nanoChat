@@ -96,7 +96,7 @@ public class NCConnector {
 	}
 	
 	//IMPORTANTE!!
-	//TODO Es necesario implementar métodos para recibir y enviar mensajes de chat a una sala
+	//// Es necesario implementar métodos para recibir y enviar mensajes de chat a una sala
 	
 	//Método para pedir la descripción de una sala
 	public NCRoomInfoMessage getRoomInfo(String room) throws IOException, ParseException {
