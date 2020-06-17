@@ -79,4 +79,12 @@ public class NCRoom extends NCRoomManager {
         String rawBuiltMsg = builtMsg.toEncodedString();
         new DataOutputStream(s.getOutputStream()).writeUTF(rawBuiltMsg);
     }
+
+    public void sendInfo(Socket s, String r) throws IOException {
+        List<String> users = new ArrayList<>();
+        users.addAll(this.userMap.keySet());
+        NCRoomInfoMessage builtMsg = (NCRoomInfoMessage) NCMessage.makeInfoMessage(NCMessage.OP_INFO, r, users, this.lastMsg);
+        String rawBuiltMsg = builtMsg.toEncodedString();
+        new DataOutputStream(s.getOutputStream()).writeUTF(rawBuiltMsg);
+    }
 }

@@ -107,8 +107,8 @@ public class NCConnector {
 		//// Recibimos el mensaje de respuesta
 		NCRoomInfoMessage res = (NCRoomInfoMessage) NCMessage.readMessageFromSocket(dis);
 		//// Devolvemos la descripción contenida en el mensaje
-		NCRoomInfoMessage rd = new NCRoomInfoMessage(NCMessage.OP_INFO, res.getRoom(), res.getUsers(), res.getTime());
-		return null;
+		//NCRoomInfoMessage rd = new NCRoomInfoMessage(NCMessage.OP_INFO, res.getRoom(), res.getUsers(), res.getTime());
+		return res;
 	}
 
 	// Método para enviar mensajes en una sala

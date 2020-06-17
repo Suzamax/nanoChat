@@ -152,12 +152,9 @@ public class NCServerThread extends Thread {
 						this.roomManager.broadcastMessage(((NCRoomSndRcvMessage) msg).getUser(), ((NCRoomSndRcvMessage) msg).getMsg());
 						// easy gg
 						break;
-					case NCMessage.OP_BROADCAST:
-						// TODO coisas
-						break;
-					case NCMessage.OP_INFO:
-						System.out.println("INFORMACIÓN");
-						// TODO cosas
+					case NCMessage.OP_GET_INFO:
+						((NCRoom) this.roomManager).sendInfo(((NCRoom) this.roomManager).getUserSocket(this.user), this.currentRoom);
+						// lmao should it work
 						break;
 					case NCMessage.OP_EXIT: // Para salir de la sala
 						exit = true;

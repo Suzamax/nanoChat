@@ -26,6 +26,7 @@ public class NCRoomInfoMessage extends NCMessage {
 	//Método que devuelve una representación de la Descripción lista para ser impresa por pantalla
 	public String toEncodedString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append(OPCODE_FIELD + DELIMITER).append(opcodeToOperation(opcode)).append(END_LINE);
 		sb.append("Room Name: ")
 				.append(roomName)
 				.append(END_LINE)
@@ -41,7 +42,8 @@ public class NCRoomInfoMessage extends NCMessage {
 				.append(END_LINE).append("\tLast message: ")
 				.append(new Date(timeLastMessage).toString());
 		else
-			sb.append("\tLast message: not yet");
+			sb.append(END_LINE)
+				.append("\tLast message: not yet");
 		return sb.toString();
 	}
 
@@ -62,7 +64,7 @@ public class NCRoomInfoMessage extends NCMessage {
 
 			if (f.equalsIgnoreCase("room name"))
 				roomName = v;
-			if (f.contains("members")) {
+			if (f.contains("Members")) {
 				users = v.trim().split(USER_DELIMITER);
 				if (users.length > 0) Collections.addAll(members, users);
 			}

@@ -252,6 +252,8 @@ public class NCController {
 					System.out.println(" joins the room." + ANSI_RESET);
 				else System.out.println(" left." + ANSI_RESET);
 				break;
+			case NCMessage.OP_INFO:
+				System.out.println(ANSI_GREEN + "INFO" + ANSI_RESET);
 		}
 	}
 

@@ -17,6 +17,7 @@ public class NCCommands {
 	public static final byte COM_ROOMINFO = 7;
 	public static final byte COM_QUIT = 8;
 	public static final byte COM_HELP = 9;
+	public static final byte COM_CREATE = 10;
 	public static final byte COM_SOCKET_IN = 101;
 	
 	/**
@@ -34,7 +35,8 @@ public class NCCommands {
 		COM_EXIT, 
 		COM_ROOMINFO,
 		COM_QUIT,
-		COM_HELP
+		COM_HELP,
+		COM_CREATE
 		};
 
 	/**
@@ -49,7 +51,9 @@ public class NCCommands {
 		"exit",
 		"info",
 		"quit",
-		"help" };
+		"help",
+		"create",
+	};
 
 	/**
 	 * Mensaje de ayuda para cada orden
@@ -63,7 +67,9 @@ public class NCCommands {
 		"to leave the current room", 
 		"shows the information of the room",
 		"to quit the application",
-		"shows this information"};
+		"shows this information",
+		"creates a new room"
+	};
 
 	private static Map<String, Byte> _commands_map;
 	static {
