@@ -12,7 +12,6 @@ public class NCRoomInfoMessage extends NCMessage {
 	public List<String> members;
 	public long timeLastMessage;
 
-	private static final String ROOM_DELIMITER = ";";
 	private static final String USER_DELIMITER = ",";
 
 	//Constructor a partir de los valores para los campos
@@ -27,23 +26,32 @@ public class NCRoomInfoMessage extends NCMessage {
 	public String toEncodedString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(OPCODE_FIELD + DELIMITER).append(opcodeToOperation(opcode)).append(END_LINE);
-		sb.append("Room Name: ")
+		sb
+				.append("Room Name")
+				.append(DELIMITER)
 				.append(roomName)
-				.append(END_LINE)
-				.append("\t Members (")
+				.append(END_LINE);
+		sb
+				.append("Members (")
 				.append(members.size())
-				.append(") : ");
-		for (String member: members) {
+				.append(")")
+				.append(DELIMITER);
+		for (String member : members) {
 			sb.append(member)
-				.append(" ");
+				.append(USER_DELIMITER);
 		}
+		sb
+			.append(END_LINE);
+		sb
+			.append("Last message")
+			.append(DELIMITER);
 		if (timeLastMessage != 0)
 			sb
-				.append(END_LINE).append("\tLast message: ")
 				.append(new Date(timeLastMessage).toString());
 		else
-			sb.append(END_LINE)
-				.append("\tLast message: not yet");
+			sb
+				.append("not yet");
+		sb.append(END_LINE).append(END_LINE);
 		return sb.toString();
 	}
 
@@ -52,7 +60,7 @@ public class NCRoomInfoMessage extends NCMessage {
 		String roomName = "";
 		ArrayList<String> members = new ArrayList<String>();
 		long timeLastMessage = 0;
-		String[] lines = desc.split(ROOM_DELIMITER);
+		String[] lines = desc.split(String.valueOf(END_LINE));
 		String[] users;
 		String f, v; // Campo, Valor.
 		int idx;
@@ -62,15 +70,17 @@ public class NCRoomInfoMessage extends NCMessage {
 			f = line.substring(0, idx).toLowerCase().trim();
 			v = line.substring(idx + 1);
 
-			if (f.equalsIgnoreCase("room name"))
+			if (f.equalsIgnoreCase("Room Name"))
 				roomName = v;
-			if (f.contains("Members")) {
+			if (f.contains("members")) {
 				users = v.trim().split(USER_DELIMITER);
-				if (users.length > 0) Collections.addAll(members, users);
+				// Siempre va a haber un usuario que haga el info // if (users.length > 0)
+				Collections.addAll(members, users);
 			}
-			if (f.equalsIgnoreCase("last message"))
-				if (!v.contains("not yet"))
-					timeLastMessage = new SimpleDateFormat("MM/dd/yyyy - H:mm:ss", Locale.ENGLISH).parse(v).getTime();
+			if (f.equalsIgnoreCase("Last Message"))
+				if (!v.equalsIgnoreCase("not yet"))
+					timeLastMessage = new SimpleDateFormat("EE MMM dd HH:mm:ss z yyyy",
+							Locale.ENGLISH).parse(v).getTime();
 		}
 		return new NCRoomInfoMessage(code, roomName, members, timeLastMessage);
 	}

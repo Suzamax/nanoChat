@@ -60,8 +60,10 @@ public class MessageTests {
         // read
         NCRoomInfoMessage res = NCRoomInfoMessage.readFromString(NCMessage.OP_INFO, seriald);
         // Comparar
+        assertEquals(msg.getRoom(), res.getRoom());
         assertEquals(msg.getOpcode(), res.getOpcode());
         assertEquals(msg.getUsers(), res.getUsers());
+        assertEquals(msg.getTime(), res.getTime());
     }
 
     @Test

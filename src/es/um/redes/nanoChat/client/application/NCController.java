@@ -198,12 +198,16 @@ public class NCController {
 		//// Pedimos al servidor información sobre la sala en concreto
 		NCRoomInfoMessage info_raw = this.ncConnector.getRoomInfo(this.room);
 		//// Mostramos por pantalla la información
-		System.out.println("Room: " + info_raw.roomName);
-		System.out.println("Members: ");
+		System.out.println(ANSI_GREEN + "Room: " + info_raw.roomName);
+		System.out.println("Members (" + info_raw.members.size() + "): ");
 		for (String member : info_raw.members)
 			System.out.println("\t" + member);
-		Date d = new Date(info_raw.timeLastMessage * 1000);
-		System.out.println("Last message was sent on " + d);
+		if (info_raw.timeLastMessage > 0) {
+			Date d = new Date(info_raw.timeLastMessage);
+			System.out.println("Last message was sent on " + d);
+		} else System.out.println("There's no messages in the room yet.");
+		System.out.print(ANSI_RESET);
+
 	}
 
 	//Método para notificar al servidor que salimos de la sala
@@ -252,8 +256,6 @@ public class NCController {
 					System.out.println(" joins the room." + ANSI_RESET);
 				else System.out.println(" left." + ANSI_RESET);
 				break;
-			case NCMessage.OP_INFO:
-				System.out.println(ANSI_GREEN + "INFO" + ANSI_RESET);
 		}
 	}
 
