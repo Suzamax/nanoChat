@@ -1,0 +1,348 @@
+\documentclass{article}
+
+% Cosillas a importar 
+\usepackage{titling}
+\usepackage{soul}
+
+% Código
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Imágenes de autómatas
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+
+% Español
+\usepackage{polyglossia} % Si uso Babel tikz se va a la mierda
+\setmainlanguage{spanish}
+\usepackage[utf8]{inputenc} % Para que se vea la Ñ
+
+% Datos de la portada
+\title{Documentación de nanoChat \\
+	\large Redes de Comunicaciones \\
+	\small Facultad de Informática de la Universidad de Murcia
+}
+\author{Carlos Cañellas Tovar \\
+	\small Grupo 1.1
+}
+\date{\today}
+
+% Documento
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\tableofcontents{}
+
+\newpage
+
+\section{Introducción}
+
+El presente documento ha sido realizado con el propósito de explicar el diseño, funcionalidad y funcionamiento del proyecto. Es decir, cómo se ha conseguido que funcione correctamente.
+
+Se explicará y demostrará el desarrollo y funcionamiento de esta aplicación de acuerdo a las pautas indicadas por el profesorado.
+
+No se va a desarrollar completamente una descripción de este programa, puesto que ya está indicado en los materiales provistos por el profesorado para poder iniciarnos en el desarrollo de esta aplicación. Sin embargo sirven como una base para explicar aspectos del proyecto.
+
+\newpage
+
+\section{Diseño de protocolos}
+
+Se ha de tener en cuenta que hay dos tipos de comunicación, en los cuales los roles y actores son diferentes. En uno de ellos, existe una comunicación entre dos tipos de clientes (el cliente de chat y el servidor de chat), y el directorio de servidores, el cual recibe peticiones de ambos. 
+
+Sus protocolos de transporte ya se conocen por las indicaciones de la práctica. Sin embargo, el proceso de su funcionamiento se indica en los autómatas que se indican a continuación, en la próxima sección del actual capítulo.
+
+
+
+
+\subsection{Autómatas}
+
+Se listan aquí cuatro autómatas, dos autómatas para la comunicación del cliente y el servidor con el directorio, un autómata para el sentido cliente-servidor y otro para el sentido servidor-cliente.
+
+
+\subsubsection{Autómata de cliente y directorio}
+
+Desde el lado del directorio se aceptan conexiones entrantes. El siguiente autómata representa cómo lidia el directorio con las peticiones de clientes de obtener servidor:
+
+\begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
+  \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
+
+    \node[state,initial]   (q_0)                    {$q_0$};
+    \node[state]           (q_1)  [right of=q_0]    {$q_1$};
+    \node[state,accepting] (q_2)  [right of=q_1]    {$q_2$};
+
+    \path[->]
+    (q_0) edge [bend left]  node {rcv(GETSERVER)}    (q_1)
+    (q_1) edge [bend left]  node {snd(NOSERVER) | timeout}    (q_0)
+          edge              node {snd(SERVERRES)}  (q_2);
+\end{tikzpicture}
+
+GETSERVER es una orden mediante protocolo sin establecimiento de conexión que se envía desde el cliente y ha de recibirla el directorio. Si esa orden llega (puede perderse, esto es UDP), el directorio puede enviar, en caso de existir tal servidor, su dirección IP almacenada (SERVERRES), o bien indicar que para su protocolo no existe servidor registrado (NOSERVER). Siempre contando con la eficacia de la respuesta y que sea capaz el cliente de recibir tal respuesta.
+
+
+\subsubsection{Autómata de servidor y directorio}
+
+Igualmente, desde el lado del directorio, se aceptan las conexiones de nuevos servidores para ser registrados:
+
+\begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
+  \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
+
+    \node[state,initial]   (q_0)                    {$q_0$};
+    \node[state]           (q_1)  [right of=q_0]    {$q_1$};
+    \node[state,accepting] (q_2)  [right of=q_1]    {$q_2$};
+
+    \path[->]
+    (q_0) edge [bend left]  node {rcv(REGISTER)} (q_1)
+    (q_1) edge [bend left]  node {timeout}       (q_0)
+          edge              node {snd(OK)}       (q_2);
+\end{tikzpicture}
+
+El servidor envía una petición de registro (REGISTER) al directorio. Este debe aceptarlo y responder que sí (OK). Si el mensaje se pierde por lo que sea, salta el timeout y se reintenta el registro.
+
+\subsubsection{Autómata del cliente}
+
+En el siguiente autómata se muestran todos los estados posibles del cliente, desde que pide un servidor al directorio hasta que envía mensajes en chat, pasando por otros.
+
+\begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
+  \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
+
+    \node[state,initial]               (q_0)                    {$q_0$};
+    \node[state]                       (q_1)  [above of=q_0]    {$q_1$};
+    \node[state]                       (q_2)  [below right of=q_1]    {$q_2$};
+    \node[state]                       (q_3)  [below of=q_2]    {$q_3$};
+    \node[state]                       (q_4)  [below of=q_3]    {$q_4$};
+    \node[state]                       (q_5)  [below of=q_0]     {$q_5$};
+    \node[state,accepting]             (q_6)  [below left of=q_5]     {$q_6$};
+    \node[state]                       (q_7)  [below of=q_5]    {$q_7$};
+    \node[state]                       (q_8)  [left of=q_6]    {$q_8$};
+    \node[state,accepting]             (q_9)  [below left of=q_0]    {$q_9$};
+    \node[state]                       (q_10) [left of=q_9]    {$q_{10}$};
+
+    \path[->]
+    (q_0) edge [bend left]  node {\tiny snd(GETSERVER)}                (q_1)
+    (q_1) edge              node {\tiny timeout | rcv(NOSERVER)}       (q_0)
+          edge [bend left]  node {\tiny rcv(SERVERRES)}                (q_2)
+    (q_2) edge [bend left]  node {\tiny connect (PRE\_CONNECTION)}     (q_3)
+    (q_3) edge [bend left]  node {\tiny timeout}					     (q_2)
+    	  edge              node {\tiny connected (PRE\_REGISTRATION)} (q_4)
+    (q_4) edge [bend left]  node {\tiny snd(NICK)}                     (q_5)
+    (q_5) edge [bend left]  node {\tiny rcv(NICK\_DUP)}                (q_4)
+    	  edge              node {\tiny rcv(NICK\_OK)}                 (q_6)
+    (q_6) edge [bend left]  node {\tiny snd(GET\_ROOMS)}					 (q_7)
+    	  edge [bend left]  node {\tiny snd(ENTER <room>)}				 (q_8)
+    	  edge              node {\tiny snd(QUIT)}                       (q_0)
+    (q_7) edge [bend left]  node {\tiny rcv(ROOM\_LIST)}					 (q_6)
+    (q_8) edge [bend left]  node {\tiny \st{rcv(NO\_ROOM)}}					 (q_6)
+          edge				node {\tiny rcv(IN\_ROOM)}					 (q_9)
+    (q_9) edge [bend left]  node {\tiny snd(GET\_INFO)}				 (q_10)
+    	  edge [loop above] node {\tiny snd(SEND <msg>)}				 ()
+    	  edge [loop right] node {\tiny rcv(MSG) | rcv(BROADCAST)}     ()
+    	  edge [bend right]	node {\tiny snd(EXIT)}						 (q_6)
+      	  edge [bend left]  node {\tiny snd(QUIT)}                       (q_0)
+
+   	(q_10) edge [bend left] node {\tiny rcv(INFO)}						 (q_9)
+          ;
+\end{tikzpicture}
+
+Este autómata es más complicado que el resto. Se inicia estando el cliente iniciado pero sin haber conectado aún con el directorio. Entonces realiza una petición a este para obtener el servidor. Si no hay ningún servidor o si el tiempo de espera de recibir una respuesta del directorio se agota, se vuelve al estado inicial. En otro caso, recibe una respuesta con el servidor al cual conectarse.\\\\
+
+Tras recibir la respuesta se intentará conectar al servidor. Aquí solo se contempla volver a este estado en caso de agotarse el tiempo de espera. En otro caso se llegará a un estado de pre-registro. Para registrarse el usuario debe enviar al servidor cuál será su nick. Este le dirá al cliente si puede usarlo (NICK\_OK) o si está ya en uso (NICK\_DUP) y debe elegir otro.
+
+Entonces se llega a un estado ya final en el que el usuario está registrado pero puede entrar a alguna sala (enviará un ENTER con la sala), consultar las salas disponibles (GETROOMS) o bien irse del servidor (QUIT).
+
+Si pide las salas, el servidor devolverá un mensaje ROOMLIST con las salas disponibles e información sobre ellas.
+
+Si elige irse, vuelve al estado inicial del autómata.\\\\
+
+Lo interesante es entrar en una sala, en la que estaba previsto recibir un NO\_ROOM en caso de que no existiera, pero la funcionalidad añadida de crear sala ha hecho que el usuario entre en una sala vacía en caso de no existir tal sala (se realiza una inicialización dentro del servidor). Se plasmó en el autómata como posibilidad, pero no se da, por ello el estado está tachado.
+
+Al entrar en una sala, puedes enviar mensajes, recibir mensajes de otros clientes y del servidor (broadcast), o pedir información de la sala actual. Y también se puede salir de la sala o salir del cliente.
+
+Con todo, quizá sea este el autómata más completo, ilustrando todos los estados del cliente.
+
+\subsubsection{Autómata del servidor}
+
+Este autómata es quizá más ligero que el anterior pero debe prestarse atención en algunos detalles.
+
+TODO TODO TODO
+
+\newpage
+
+\subsection{Mensajes}
+
+En esta sección se explicarán los diferentes tipos de mensaje que el directorio utiliza, y el protocolo implementado para la comunicación cliente-servidor.
+
+\subsubsection{Comunicación con el directorio}
+
+La comunicación es UDP. Los mensajes tienen un formato compacto para una mayor eficiencia. Los tipos de mensaje que se van a enviar están guardados en un enumerado de Java, lo cual se verá en la implementación. De momento vamos a describir qué mensajes se usan.
+
+\begin{table}[h!] \footnotesize
+  \begin{tabular}{| c | c |}
+  	\hline
+      opcode (1 byte) & protocolo (4 bytes) \\
+      \hline
+      Valor byte de GETSERVER & 78375777 \\
+      \hline
+  \end{tabular}
+  \caption{Mensaje del cliente para obtener el servidor a partir del protocolo.}
+\end{table}
+
+
+\begin{table}[h!]\footnotesize
+  \begin{tabular}{| c |}
+  	\hline
+      opcode (1 byte) \\
+      \hline
+      Valor byte de NOSERVER \\
+      \hline
+  \end{tabular}
+  \caption{Mensaje del directorio al cliente si no hay un servidor compatible.}
+\end{table}
+
+\begin{table}[h!]\footnotesize
+  \begin{tabular}{| c | c | c |}
+  	\hline
+      opcode (1 byte) & ip\_addr (4 bytes) & puerto (tamaño en bytes de 1 int) \\
+      \hline
+      Valor byte de SERVERRES & IP & PUERTO \\
+      \hline
+  \end{tabular}
+  \caption{Mensaje del directorio para proveer al cliente del \textit{socket} del servidor.}
+\end{table}
+
+\begin{table}[h!]\footnotesize
+  \begin{tabular}{| c | c | c |}
+  	\hline
+      opcode (1 byte) & ip\_addr (4 bytes) & puerto (tamaño en bytes de 1 int) \\
+      \hline
+      Valor byte de REGISTER & IP & PUERTO \\
+      \hline
+  \end{tabular}
+  \caption{Mensaje del servidor para registrar su \textit{socket} en el directorio.}
+\end{table}
+
+\begin{table}[h!]\footnotesize
+  \begin{tabular}{| c |}
+  	\hline
+      opcode (1 byte) \\
+      \hline
+      Valor byte de OK \\
+      \hline
+  \end{tabular}
+  \caption{Este mensaje sirve para decir al servidor que fue registrado con éxito.}
+\end{table}
+
+
+
+\subsubsection{Comunicación entre cliente y servidor}
+
+El protocolo cliente-servidor es TCP (confiable) y casi toda la comunicación que realizarán los programas de cliente y servidor, obviando el registro y peticiones con el directorio, serán mediante tuberías basadas en TCP, por lo que el propio framework estándar de Java tiene ya realizada la implementación de cómo comunicar los elementos (\textit{sockets}, \textit{streams} de datos por cada \textit{socket}...).
+
+Se usan mensajes en formato clave-valor. Son los siguientes:
+
+\begin{itemize}
+\item \ul{OP\_NICK}: Mensaje del cliente. Acepta un campo mensaje que será el nick que se usará.
+\item \ul{OP\_NICK\_OK}: Mensaje del servidor en el que notifica que se acepta el nick y ya está registrado el usuario.
+\item \ul{OP\_NICK\_DUP}: Mensaje del servidor en el que notifica al cliente que ya se está usando ese nick por parte de otro usuario y por tanto debe elegir otro.
+\item \ul{OP\_GET\_ROOMS}: Mensaje del cliente para pedir al servidor información de todas las salas en uso, sus usuarios y la fecha del último mensaje.
+\item \ul{OP\_ROOM\_LIST}: Mensaje del servidor en respuesta a \hl{OP\_GET\_ROOMS}. Trae la información consigo.
+\item \ul{OP\_ENTER}: Mensaje del cliente junto al nombre de la sala en la que se desea entrar.
+\item \ul{OP\_IN\_ROOM}: Mensaje del servidor. Indica que se ha entrado con éxito a la sala especificada en \hl{OP\_ENTER}.
+\item \st{OP\_NO\_ROOM}: Mensaje del servidor que indica que no se puede acceder a la sala. Actualmente no se utiliza en este proyecto pero se mantiene por si se expande el programa para incluir privilegios y vetos a usuarios.
+\item \ul{OP\_SEND}: Mensaje del cliente acompañado del mensaje a enviar globalmente a la sala.
+\item \ul{OP\_MSG}: Mensaje del servidor que contiene un mensaje proveniente de un cliente concreto. Puede ser privado (\hl{OP\_SEND\_PRIV}) o público (\hl{OP\_SEND}).
+\item \ul{OP\_EXIT}: Mensaje del cliente para poder salir de la sala.   
+\item \ul{OP\_GONE}: Mensaje del servidor que indica que se ha ido un usuario de la sala.
+\item \ul{OP\_INFO}: Mensaje del servidor con la información de la sala actual.
+\item \ul{OP\_GET\_INFO}: Mensaje del cliente para pedir al servidor información de la sala actual.
+\item \ul{OP\_BROADCAST}: Mensaje del servidor en difusión.
+\item \ul{OP\_SEND\_PRIV}: Mensaje del cliente para enviar un mensaje privado a un cliente concreto.
+\end{itemize}
+
+
+\section{Implementación}
+
+Lo primero que cabe destacar, es que se ha introducido un enumerado para los opcodes de los mensajes UDP.
+
+El código está en \texttt{./src/es/um/redes/nanoChat/directory/DirectoryOpCodes.java} y procedo a explicar algún que otro detalle:
+
+\begin{lstlisting}[language=Java, caption=Parte del código]
+// Omito los import
+// Serializable implica que puedo transferir
+// cada valor del enumerado en bytes
+public enum DirectoryOpCodes implements Serializable {
+    // Aquí especifico cada 
+    OK(1),
+    NOSERVER(2),
+    REGISTER(3),
+    GETSERVER(4),
+    SERVERRES(5);
+
+    private final int value; // Valor de cada valor del enum
+    private static final Map map = new HashMap<>(); 
+    // Mapeo para relacionar valores
+
+    DirectoryOpCodes(int value) { // Constructor para cada valor
+        this.value = value;
+    }
+
+    static { // Al crear el enumerado se hace su mapeo
+        for (DirectoryOpCodes opcode : DirectoryOpCodes.values()) {
+            map.put(opcode.value, opcode);
+        }
+    }
+
+    public byte getByteValue() {
+    // Obtenemos el número del código como Byte
+        return (byte) value;
+    }
+}
+\end{lstlisting}
+
+Aquí se ve la verdadera potencia se un enumerado en Java. He de reconocer que es la primera vez que utilizo algo así y me sorprende lo útil que es.
+
+\subsection{Cosas curiosas}
+
+\subsubsection{Implementación de mensajes diferenciados}
+
+\subsubsection{Tests}
+
+Para poder realizar correctamente algunas funcionalidades de paso de mensajes he realizado algunos tests con tal de comprobar que se envían y reciben correctamente. Están en el directorio /tests aunque solo existe la clase MessageTests. Por supuesto, es recurrente el uso de nombres de celebridades de Silicon Valley a modo de ejemplo.
+
+Obviando ese detalle \textit{algo freak}, es muy útil realizar tests. Te ayudan a descubrir si el paso de mensajes está bien implementado, si la creación del mensaje y la lectura del mensaje codificado en una cadena de caracteres también lo está.
+
+\section{Conclusiones}
+
+\section{Agradecimientos}
+
+Agradezco a la documentación de Java por su utilidad y su claridad, a StackOverflow por alguna que otra resolución (los enumerados vitaminados los aprendí de ahí), a mi profesor de prácticas (Lorenzo) por su amabilidad y explicaciones claras de algunas facetas de la práctica, y a un compañero y gran amigo que me ayudó a ver la práctica con otro enfoque después de estar semanas perdido, ya que gracias a él pude retomar la práctica con energía y conocimientos extra.
+
+\end{document}  
