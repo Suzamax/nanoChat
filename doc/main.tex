@@ -92,40 +92,51 @@ Se listan aquí cuatro autómatas, dos autómatas para la comunicación del clie
 
 Desde el lado del directorio se aceptan conexiones entrantes. El siguiente autómata representa cómo lidia el directorio con las peticiones de clientes de obtener servidor:
 
-\begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
+\begin{tikzpicture}[shorten >=1pt,node distance=4.4cm,on grid,auto]
   \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
 
     \node[state,initial]   (q_0)                    {$q_0$};
-    \node[state]           (q_1)  [right of=q_0]    {$q_1$};
+    \node[state]           (q_1)  [below right of=q_0]    {$q_1$};
     \node[state,accepting] (q_2)  [right of=q_1]    {$q_2$};
+    \node[state]           (q_3)  [left of=q_1]    {$q_3$};
 
     \path[->]
-    (q_0) edge [bend left]  node {rcv(GETSERVER)}    (q_1)
-    (q_1) edge [bend left]  node {snd(NOSERVER) | timeout}    (q_0)
-          edge              node {snd(SERVERRES)}  (q_2);
+    (q_0) edge [bend right] node {\tiny rcv(GETSERVER)} (q_1)
+    (q_1) edge [bend right] node {\tiny snd(NOSERVER)}  (q_0)
+          edge              node {\tiny snd(SERVERRES)} (q_2)
+          edge              node {\tiny timeout 1..N-1} (q_3)
+    (q_3) edge [bend right]  node {\tiny rcv(GETSERVER)} (q_1)
+    	  edge [bend left] node {\tiny timeout N}		 (q_0)
+          ;
 \end{tikzpicture}
 
 GETSERVER es una orden mediante protocolo sin establecimiento de conexión que se envía desde el cliente y ha de recibirla el directorio. Si esa orden llega (puede perderse, esto es UDP), el directorio puede enviar, en caso de existir tal servidor, su dirección IP almacenada (SERVERRES), o bien indicar que para su protocolo no existe servidor registrado (NOSERVER). Siempre contando con la eficacia de la respuesta y que sea capaz el cliente de recibir tal respuesta.
+
+Si el número de timeouts llega a un N específico (por ejemplo, cinco), no se vuelve a reintentar la conexión.
 
 
 \subsubsection{Autómata de servidor y directorio}
 
 Igualmente, desde el lado del directorio, se aceptan las conexiones de nuevos servidores para ser registrados:
 
-\begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
+\begin{tikzpicture}[shorten >=1pt,node distance=3.75cm,on grid,auto]
   \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
 
     \node[state,initial]   (q_0)                    {$q_0$};
-    \node[state]           (q_1)  [right of=q_0]    {$q_1$};
+    \node[state]           (q_1)  [below right of=q_0]    {$q_1$};
     \node[state,accepting] (q_2)  [right of=q_1]    {$q_2$};
+    \node[state]           (q_3)  [left of=q_1]    {$q_3$};
 
     \path[->]
-    (q_0) edge [bend left]  node {rcv(REGISTER)} (q_1)
-    (q_1) edge [bend left]  node {timeout}       (q_0)
-          edge              node {snd(OK)}       (q_2);
+    (q_0) edge              node {\tiny rcv(REGISTER)}       (q_1)
+    (q_1) edge [bend left]  node {\tiny timeout 1..N-1}      (q_3)
+          edge              node {\tiny snd(OK)}             (q_2)
+    (q_3) edge [bend left]  node {\tiny rcv(REGISTER)}       (q_1)
+    	  edge              node {\tiny timeout N}           (q_0);
+          
 \end{tikzpicture}
 
-El servidor envía una petición de registro (REGISTER) al directorio. Este debe aceptarlo y responder que sí (OK). Si el mensaje se pierde por lo que sea, salta el timeout y se reintenta el registro.
+El servidor envía una petición de registro (REGISTER) al directorio. Este debe aceptarlo y responder que sí (OK). Si el mensaje se pierde por lo que sea, salta el timeout y se reintenta el registro hasta un total de N veces, siendo N un número natural arbitrario, por ejemplo cinco.
 
 \subsubsection{Autómata del cliente}
 
@@ -134,47 +145,48 @@ En el siguiente autómata se muestran todos los estados posibles del cliente, de
 \begin{tikzpicture}[shorten >=1pt,node distance=4cm,on grid,auto]
   \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
 
-    \node[state,initial]               (q_0)                    {$q_0$};
-    \node[state]                       (q_1)  [above of=q_0]    {$q_1$};
-    \node[state]                       (q_2)  [below right of=q_1]    {$q_2$};
-    \node[state]                       (q_3)  [below of=q_2]    {$q_3$};
-    \node[state]                       (q_4)  [below of=q_3]    {$q_4$};
-    \node[state]                       (q_5)  [below of=q_0]     {$q_5$};
-    \node[state,accepting]             (q_6)  [below left of=q_5]     {$q_6$};
-    \node[state]                       (q_7)  [below of=q_5]    {$q_7$};
-    \node[state]                       (q_8)  [left of=q_6]    {$q_8$};
-    \node[state,accepting]             (q_9)  [below left of=q_0]    {$q_9$};
-    \node[state]                       (q_10) [left of=q_9]    {$q_{10}$};
+    \node[state,initial]               (q_0)                       {$q_0$};
+    \node[state]                       (q_1)  [above of=q_0]       {$q_1$};
+    \node[state]                       (q_2)  [above right of=q_0] {$q_2$};
+    \node[state]                       (q_3)  [below of=q_2]       {$q_3$};
+    \node[state]                       (q_4)  [below of=q_3]       {$q_4$};
+    \node[state]                       (q_5)  [below of=q_0]       {$q_5$};
+    \node[state,accepting]             (q_6)  [below left of=q_5]  {$q_6$};
+    \node[state]                       (q_7)  [below of=q_5]       {$q_7$};
+    \node[state]                       (q_8)  [left of=q_6]        {$q_8$};
+    \node[state,accepting]             (q_9)  [below left of=q_0]  {$q_9$};
+    \node[state]                       (q_10) [left of=q_9]        {$q_{10}$};
+    \node[state]                       (q_11) [left of=q_1]        {$q_{11}$};
 
     \path[->]
-    (q_0) edge [bend left]  node {\tiny snd(GETSERVER)}                (q_1)
-    (q_1) edge              node {\tiny timeout | rcv(NOSERVER)}       (q_0)
-          edge [bend left]  node {\tiny rcv(SERVERRES)}                (q_2)
-    (q_2) edge [bend left]  node {\tiny connect (PRE\_CONNECTION)}     (q_3)
-    (q_3) edge [bend left]  node {\tiny timeout}					     (q_2)
-    	  edge              node {\tiny connected (PRE\_REGISTRATION)} (q_4)
-    (q_4) edge [bend left]  node {\tiny snd(NICK)}                     (q_5)
-    (q_5) edge [bend left]  node {\tiny rcv(NICK\_DUP)}                (q_4)
-    	  edge              node {\tiny rcv(NICK\_OK)}                 (q_6)
-    (q_6) edge [bend left]  node {\tiny snd(GET\_ROOMS)}					 (q_7)
-    	  edge [bend left]  node {\tiny snd(ENTER <room>)}				 (q_8)
-    	  edge              node {\tiny snd(QUIT)}                       (q_0)
-    (q_7) edge [bend left]  node {\tiny rcv(ROOM\_LIST)}					 (q_6)
-    (q_8) edge [bend left]  node {\tiny \st{rcv(NO\_ROOM)}}					 (q_6)
-          edge				node {\tiny rcv(IN\_ROOM)}					 (q_9)
-    (q_9) edge [bend left]  node {\tiny snd(GET\_INFO)}				 (q_10)
-    	  edge [loop above] node {\tiny snd(SEND <msg>)}				 ()
-    	  edge [loop right] node {\tiny rcv(MSG) | rcv(BROADCAST)}     ()
-    	  edge [bend right]	node {\tiny snd(EXIT)}						 (q_6)
-      	  edge [bend left]  node {\tiny snd(QUIT)}                       (q_0)
-
-   	(q_10) edge [bend left] node {\tiny rcv(INFO)}						 (q_9)
+    (q_0)  edge [bend left]  node {\tiny snd(GETSERVER)}                					(q_1)
+    (q_1)  edge              node {\tiny timeout N | rcv(NOSERVER)}       				(q_0)
+           edge [bend left]  node {\tiny rcv(SERVERRES)}                					(q_2)
+           edge [bend left]  node {\tiny timeout 1..N-1}                					(q_11)
+    (q_2)  edge              node {\tiny connect (PRE\_CONNECTION)}     					(q_3)
+    (q_3)  edge              node {\tiny connected (PRE\_REGISTRATION)}					(q_4)
+    (q_4)  edge [bend left]  node {\tiny snd(NICK)}                     					(q_5)
+    (q_5)  edge [bend left]  node {\tiny rcv(NICK\_DUP)}                					(q_4)
+    	   edge              node {\tiny rcv(NICK\_OK)}                 					(q_6)
+    (q_6)  edge [bend left]  node {\tiny snd(GET\_ROOMS)}								(q_7)
+    	   edge [bend left]  node {\tiny snd(ENTER <room>)}								(q_8)
+    	   edge              node {\tiny snd(QUIT)}                     					(q_0)
+    (q_7)  edge [bend left]  node {\tiny rcv(ROOM\_LIST)}								(q_6)
+    (q_8)  edge [bend left]  node {\tiny \st{rcv(NO\_ROOM)}}								(q_6)
+           edge				 node {\tiny rcv(IN\_ROOM)}									(q_9)
+    (q_9)  edge [bend left]  node {\tiny snd(GET\_INFO)}					                (q_10)
+    	   edge [loop above] node {\tiny snd(SEND <msg>) | snd(SEND\_PRIV <user> <msg>)} ()
+    	   edge [loop right] node {\tiny rcv(MSG) | rcv(BROADCAST)}     					()
+    	   edge [bend right] node {\tiny snd(EXIT)}										(q_6)
+      	   edge [bend left]  node {\tiny snd(QUIT)}                     					(q_0)
+   	(q_10) edge [bend left]  node {\tiny rcv(INFO)}										(q_9)
+   	(q_11) edge [bend left]  node {\tiny snd(GETSERVER)}                					(q_1)
           ;
 \end{tikzpicture}
 
 Este autómata es más complicado que el resto. Se inicia estando el cliente iniciado pero sin haber conectado aún con el directorio. Entonces realiza una petición a este para obtener el servidor. Si no hay ningún servidor o si el tiempo de espera de recibir una respuesta del directorio se agota, se vuelve al estado inicial. En otro caso, recibe una respuesta con el servidor al cual conectarse.\\\\
 
-Tras recibir la respuesta se intentará conectar al servidor. Aquí solo se contempla volver a este estado en caso de agotarse el tiempo de espera. En otro caso se llegará a un estado de pre-registro. Para registrarse el usuario debe enviar al servidor cuál será su nick. Este le dirá al cliente si puede usarlo (NICK\_OK) o si está ya en uso (NICK\_DUP) y debe elegir otro.
+Tras recibir la respuesta se intentará conectar al servidor. Si la conexión falla, se reintentará. En otro caso se llegará a un estado de pre-registro. Para registrarse el usuario debe enviar al servidor cuál será su nick. Este le dirá al cliente si puede usarlo (NICK\_OK) o si está ya en uso (NICK\_DUP) y debe elegir otro.
 
 Entonces se llega a un estado ya final en el que el usuario está registrado pero puede entrar a alguna sala (enviará un ENTER con la sala), consultar las salas disponibles (GETROOMS) o bien irse del servidor (QUIT).
 
@@ -188,11 +200,49 @@ Al entrar en una sala, puedes enviar mensajes, recibir mensajes de otros cliente
 
 Con todo, quizá sea este el autómata más completo, ilustrando todos los estados del cliente.
 
+Un inciso: después de varios timeout el programa deja de intentar conectarse.
+
 \subsubsection{Autómata del servidor}
 
-Este autómata es quizá más ligero que el anterior pero debe prestarse atención en algunos detalles.
+Este autómata es más centralizado que el anterior. Se tiene el estado inicial $q_0$ y los estados de transición $q_1$ y $q_3$. A $q_3$ se llega tras un timeout y tras varios timeouts se vuelve a $q_0$. Si el registro se realiza con éxito el servidor llega a un estado final $q_2$ en el cual recibe peticiones, conexiones y mensajes de clientes y los procesa en cada uno de sus estados \textit{satélite}. En total tenemos seis estados \textit{satélite} para cada petición: establecimiento de \textit{nick}, envío de mensaje (público o privado), obtención de información de salas, obtención de información de la sala actual, o una conexión o desconexión de un cliente (para añadirlo en la lista de usuarios con su respectivo \textit{socket}).
 
-TODO TODO TODO
+\begin{tikzpicture}[shorten >=1pt,node distance=5.5cm,on grid,auto]
+  \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
+
+    \node[state,initial]   (q_0)                         {$q_0$}; % pre-registro
+    \node[state]           (q_1) [below left of=q_0]          {$q_1$}; % registro
+    \node[state,accepting] (q_2) [below of=q_1]    {$q_2$}; % aceptar usuarios
+    \node[state]           (q_3) [above left of=q_0]     {$q_3$}; % tras un timeout
+    \node[state]           (q_4) [below left of=q_1]     {$q_4$};
+    \node[state]           (q_5) [below of=q_0]    {$q_5$};
+    \node[state]           (q_6) [below left of=q_2]          {$q_6$};
+    \node[state]           (q_7) [below of=q_2]    {$q_7$};
+    \node[state]           (q_8) [below right of=q_5]    {$q_8$};
+    \node[state]           (q_9) [right of=q_7]    {$q_9$};
+    
+    
+
+    \path[->]
+    (q_0) edge              node {\tiny snd(REGISTER)}                      (q_1)
+    (q_1) edge [bend left]  node {\tiny timeout 1..N-1}                     (q_3)
+          edge              node {\tiny rcv(OK)}                            (q_2)
+    (q_2) edge 				node {\tiny connection | disconnection}         (q_9)
+    	  edge [bend left]  node {\tiny rcv(NICK)}                          (q_4)
+    	  edge              node {\tiny rcv(ENTER <room>)}				    (q_5)
+    	  edge              node {\tiny rcv(SEND <msg>) | rcv(SEND\_PRIV <user> <msg>)} (q_6)
+    	  edge              node {\tiny rcv(GET\_INFO)} 						(q_7)
+    	  edge              node {\tiny rcv(GET\_ROOMS}						(q_8)
+    (q_3) edge              node {\tiny snd(REGISTER)}                      (q_1)
+    	  edge [bend left]  node {\tiny timeout N}                          (q_0)
+    (q_4) edge              node {\tiny snd(NICK\_OK) | snd(NICK\_DUP)}     (q_2)
+    (q_5) edge [bend left]  node {\tiny snd(IN\_ROOM) | \st{snd(NO\_ROOM)}} (q_2)
+    (q_6) edge [bend left]  node {\tiny snd(MSG <msg>)}						(q_2)
+    (q_7) edge [bend left]  node {\tiny snd(INFO)}							(q_2)
+    (q_8) edge [bend left]  node {\tiny snd(ROOM\_LIST)}						(q_2)
+    (q_9) edge [bend left]  node {\tiny add or remove user}                 (q_2)
+    	  ;
+          
+\end{tikzpicture}
 
 \newpage
 
@@ -329,11 +379,18 @@ public enum DirectoryOpCodes implements Serializable {
 
 Aquí se ve la verdadera potencia se un enumerado en Java. He de reconocer que es la primera vez que utilizo algo así y me sorprende lo útil que es.
 
-\subsection{Cosas curiosas}
+\section{Otros}
 
-\subsubsection{Implementación de mensajes diferenciados}
 
-\subsubsection{Tests}
+\subsection{Demostración de la comunicación entre dos equipos}
+
+TODO: Ubuntu
+
+\subsection{Implementación de mensajes diferenciados}
+
+TODO: Texto verde y azul
+
+\subsection{Tests}
 
 Para poder realizar correctamente algunas funcionalidades de paso de mensajes he realizado algunos tests con tal de comprobar que se envían y reciben correctamente. Están en el directorio /tests aunque solo existe la clase MessageTests. Por supuesto, es recurrente el uso de nombres de celebridades de Silicon Valley a modo de ejemplo.
 
@@ -343,6 +400,6 @@ Obviando ese detalle \textit{algo freak}, es muy útil realizar tests. Te ayudan
 
 \section{Agradecimientos}
 
-Agradezco a la documentación de Java por su utilidad y su claridad, a StackOverflow por alguna que otra resolución (los enumerados vitaminados los aprendí de ahí), a mi profesor de prácticas (Lorenzo) por su amabilidad y explicaciones claras de algunas facetas de la práctica, y a un compañero y gran amigo que me ayudó a ver la práctica con otro enfoque después de estar semanas perdido, ya que gracias a él pude retomar la práctica con energía y conocimientos extra.
+Agradezco a la documentación de Java por su utilidad y su claridad, a la comunidad de StackOverflow por alguna que otra resolución (los enumerados "vitaminados" los aprendí de ahí), a mi profesor de prácticas (Lorenzo) por su amabilidad y explicaciones claras de algunas facetas de la práctica, y a un compañero y gran amigo que me ayudó a ver la práctica con otro enfoque después de estar semanas perdido, ya que gracias a él pude retomar la práctica con energía y conocimientos extra.
 
 \end{document}  
