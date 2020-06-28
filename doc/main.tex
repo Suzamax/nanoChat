@@ -204,7 +204,7 @@ Un inciso: después de varios timeout el programa deja de intentar conectarse.
 
 \subsubsection{Autómata del servidor}
 
-Este autómata es más centralizado que el anterior. Se tiene el estado inicial $q_0$ y los estados de transición $q_1$ y $q_3$. A $q_3$ se llega tras un timeout y tras varios timeouts se vuelve a $q_0$. Si el registro se realiza con éxito el servidor llega a un estado final $q_2$ en el cual recibe peticiones, conexiones y mensajes de clientes y los procesa en cada uno de sus estados \textit{satélite}. En total tenemos seis estados \textit{satélite} para cada petición: establecimiento de \textit{nick}, envío de mensaje (público o privado), obtención de información de salas, obtención de información de la sala actual, o una conexión o desconexión de un cliente (para añadirlo en la lista de usuarios con su respectivo \textit{socket}).
+Este autómata es más centralizado que el anterior. Se tiene el estado inicial $q_0$ y los estados de transición $q_1$ y $q_3$. A $q_3$ se llega tras un timeout y tras varios timeouts se vuelve a $q_0$. Si el registro se realiza con éxito el servidor llega a un estado final $q_2$ en el cual recibe peticiones, conexiones y mensajes de clientes y los procesa en cada uno de sus estados \textit{satélite}. En total tenemos seis estados \textit{satélite} para cada petición: establecimiento de \textit{nick}, envío de mensaje (público o privado), obtención de información de salas, obtención de información de la sala actual, o una conexión o desconexión de un cliente, para añadirlo o eliminarlo en la lista de usuarios con su respectivo \textit{socket}.
 
 \begin{tikzpicture}[shorten >=1pt,node distance=5.5cm,on grid,auto]
   \tikzstyle{every state}=[fill={rgb:yellow,1;white,3}]
@@ -338,11 +338,19 @@ Se usan mensajes en formato clave-valor. Son los siguientes:
 \end{itemize}
 
 
-\section{Implementación}
+\section{Implementación en el código}
+
+El código es bastante intuitivo, se mantienen los comentarios que componían los \textit{TODOs}, y se ha utilizado al máximo los recursos ya existentes, para poder simplificar todo lo posible.
+
+Quizás hay que reconocer el posible abuso del \textit{casting} para los mensajes, pero ha sido la manera más fácil de realizar algunas operaciones, aunque se vea un poco \textit{spaghetti}, dentro del orden mantenido y realizado.
+
+Por tanto, aquí solo se destacarán algunos detalles de la implementación que puedan parecer extraños o curiosos.
+
+\subsection{Enumerado serializado}
 
 Lo primero que cabe destacar, es que se ha introducido un enumerado para los opcodes de los mensajes UDP.
 
-El código está en \texttt{./src/es/um/redes/nanoChat/directory/DirectoryOpCodes.java} y procedo a explicar algún que otro detalle:
+El código está en \texttt{./src/es/um/redes/nanoChat/directory/DirectoryOpCodes.java} y se procede a explicar algún que otro detalle:
 
 \begin{lstlisting}[language=Java, caption=Parte del código]
 // Omito los import
@@ -377,18 +385,69 @@ public enum DirectoryOpCodes implements Serializable {
 }
 \end{lstlisting}
 
-Aquí se ve la verdadera potencia se un enumerado en Java. He de reconocer que es la primera vez que utilizo algo así y me sorprende lo útil que es.
+Aquí se ve la verdadera potencia de un enumerado en Java. Se añaden valores al enumerado, y se extraen como bytes (magia del Serializable).
+
+Se podría también implementar para los códigos de operación de mensajes, pero sería algo más complejo al existir ya código usado para esas variables.
+
+\subsection{Tipos de mensajes creados}
+
+Se han realizado varios tipos de mensajes, a saber:
+
+\begin{itemize}
+\item NCBroadcastMessage: Mensaje del servidor que avisa de entradas o salidas.
+\item NCImmediateMessage: Mensaje en el que solo se necesite un opcode.
+\item NCRoomInfoMessage: Mensaje por el que el servidor devuelve información de una sala.
+\item NCRoomListMessage: Mensaje que devuelve varios \texttt{NCRoomInfoMessage} para la lista de salas.
+\item NCRoomMessage: Mensaje con un solo parámetro. Sirve para entrar en salas, cambios de nick...
+\item NCRoomSndRcvMessage: Mensaje para... mensajes. Especifica emisor, receptor o receptores, privacidad y mensaje en sí.
+\end{itemize}
+
+
+El formato de los mensajes es el siguiente:
+
+\begin{itemize}
+\item NCBroadcastMessage: \\ \texttt{operation:<Op2Str>{\textbackslash}n \\ <user>:<joined|left>{\textbackslash}n{\textbackslash}n}
+\item NCImmediateMessage: \\ \texttt{operation:<Op2Str>{\textbackslash}n{\textbackslash}n}
+\item NCRoomInfoMessage: \\ \texttt{operation:<Op2Str>{\textbackslash}n \\ Room Name:<room>{\textbackslash}n \\ Members (<i>): <user$_1$>[,<user$_{2..i}$>]{\textbackslash}n \\ Last message: <time>{\textbackslash}n{\textbackslash}n} \\ Se imprimen todos los usuarios separados por comas.
+\item NCRoomListMessage: \\ \texttt{operation:<Op2Str>{\textbackslash}n \\ room name: <room$_i$>{\textbackslash}n \\ members: <user$_1$>[,<user$_{2..j}$>]{\textbackslash}n \\ last message: <time$_i$>{\textbackslash}n \\ {\textbackslash}n} \\ Se repiten las líneas de nombre de habitación, lista de usuarios y último mensaje por cada sala existente.
+\item NCRoomMessage: \\ \texttt{operation:<Op2Str>{\textbackslash}n \\ msg: <msg>{\textbackslash}n{\textbackslash}n} \\ Si, por ejemplo, la operación es \textbf{nick}, el contenido de \textit{msg} será evaluado como el nick a usar.
+\end{itemize}
+
+
+\subsubsection{Mensajes de chat (públicos y privados)}
+
+Tanto los mensajes públicos como los privados se han implementado en \texttt{NCRoomSndRcvMessage} y cuenta con los siguientes campos:
+
+\begin{itemize}
+	\item Usuario emisor
+	\item Mensaje
+	\item Booleano que indica si es privado
+	\item Usuario receptor, en caso de ser privado
+\end{itemize}
+
+¿Posible mejora? Evaluar el receptor (\textit{nullable?}) en lugar de evaluar si hay un \textit{flag} activo y coger el receptor en consecuencia.
+
+\subsection{Implementación de mensajes diferenciados}
+
+Para diferenciar mensajes normales de mensajes privados o mensajes del servidor en sala de chat, he decidido aprovechar la potencia de la terminal y usar códigos ANSI de color.
+
+\begin{lstlisting}[language=Java, caption=Colores]
+public static final String ANSI_BLUE = "\u001B[34m"; // Privados
+public static final String ANSI_GREEN = "\u001B[32m"; // Servidor
+public static final String ANSI_RESET = "\u001B[0m"; // Reset
+\end{lstlisting}
+
+Al principio del \textit{string} que imprime los mensajes privados o mensajes de servidor se inserta el \textit{string} para su respectivo color. Al final se inserta el \textit{string} para devolver el color original de la shell.
 
 \section{Otros}
 
 
 \subsection{Demostración de la comunicación entre dos equipos}
 
-TODO: Ubuntu
+TODO: WIRESHARK entre VMs de KVM/QEMU, que quede guapo.
 
-\subsection{Implementación de mensajes diferenciados}
 
-TODO: Texto verde y azul
+
 
 \subsection{Tests}
 
@@ -398,8 +457,10 @@ Obviando ese detalle \textit{algo freak}, es muy útil realizar tests. Te ayudan
 
 \section{Conclusiones}
 
-\section{Agradecimientos}
+Este proyecto es bastante útil para empezar a programar en serio Java, descubrir la manera \textit{dura} de desarrollar un protocolo de mensajería básico, tratar conexiones TCP y UDP desde la capa de aplicación, y comprobar que realmente esto funciona y es \textit{transparente} al usuario gracias a los mecanismos de sistema operativo y a la pila TCP/IP.
 
-Agradezco a la documentación de Java por su utilidad y su claridad, a la comunidad de StackOverflow por alguna que otra resolución (los enumerados "vitaminados" los aprendí de ahí), a mi profesor de prácticas (Lorenzo) por su amabilidad y explicaciones claras de algunas facetas de la práctica, y a un compañero y gran amigo que me ayudó a ver la práctica con otro enfoque después de estar semanas perdido, ya que gracias a él pude retomar la práctica con energía y conocimientos extra.
+Seguramente funcione incluso entre equipos localizados en distintas redes y en distintos sistemas. Es decir, es un programa portable, con crear los .jar (ojo, siempre que usemos Oracle u OpenJDK, Amazon Coretto da problemas, que es el que trae IntelliJ por defecto. No se ha probado con GraalVM u otras máquinas virtuales) se consigue un programa que corra sobre cualquier equipo con JRE instalado. Hablando de problemas: resulta que la implementación de Coretto de las tuberías TCP da problemas con otras implementaciones de Java.
+
+Además, se deja la puerta abierta a más modificaciones, para hacer que se parezca más a un IRC, con operadores, vetos, \textit{kickbans}... De hecho al poder correlacionar IRC con esta práctica se ha podido llevar muy bien el flujo de la mensajería.
 
 \end{document}  

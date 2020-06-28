@@ -20,7 +20,7 @@ public class NCRoomSndRcvMessage extends NCMessage {
         this.opcode = type;
         this.user = user;
         this.msg = msg;
-        this.priv = priv;
+        this.priv = priv; // Siempre false, realmente
         this.rcvr = null;
     }
 
@@ -29,7 +29,7 @@ public class NCRoomSndRcvMessage extends NCMessage {
         this.opcode = type;
         this.user = user;
         this.rcvr = dst;
-        this.priv = priv; // Siempre true lmao
+        this.priv = priv; // Siempre true, realmente
         this.msg = msg;
     }
 
