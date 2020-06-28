@@ -3,6 +3,9 @@
 % Cosillas a importar 
 \usepackage{titling}
 \usepackage{soul}
+\usepackage{graphicx}
+\graphicspath{ {./} }
+
 
 % Código
 \usepackage{listings}
@@ -444,9 +447,17 @@ Al principio del \textit{string} que imprime los mensajes privados o mensajes de
 
 \subsection{Demostración de la comunicación entre dos equipos}
 
-TODO: WIRESHARK entre VMs de KVM/QEMU, que quede guapo.
+Se incluyen algunas imágenes en la carpeta donde está localizado el documento. Se han realizado las pruebas en dos máquinas virtuales de Fedora 32 con JRE 8 de Oracle instalado en ellas (se usa Fedora en lugar de Ubuntu porque se puede instalar Java con un RPM de forma sencilla).
 
+En ellas se puede ver el correcto envío de mensajes, capturándose en Wireshark ya que está rastreando la red virtual (estas máquinas virtuales se encuentran en KVM/QEMU, en VirtualBox no funciona este método).
 
+Todos los OK\_*.png son capturas del código 1, que corresponde al OK de UDP, viendo las tres caras (Directorio, cliente y servidor).
+
+Se realiza una prueba de establecer el nick como \textit{ElonMusk} en el cliente, y se captura en NickElon.png la operación enviada. Y en NickIsOkay.png se observa que efectivamente se acepta el nick.
+
+Y en Miaus.png se ve cómo se envía un mensaje al servidor dentro de una sala concreta.
+
+Con este par de ejemplos se pretende demostrar el correcto funcionamiento de este programa correspondiéndose con TCP y UDP.
 
 
 \subsection{Tests}
